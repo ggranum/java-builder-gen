@@ -1,0 +1,26 @@
+<idea-plugin version="2">
+  <id>biz.ggranum.jetbrains.BuilderGen</id>
+  <name>BuilderGen</name>
+  <version>0.2</version>
+  <vendor email="intellij@granum.biz">Geoff M. Granum</vendor>
+
+  <description><![CDATA[
+      Directive+Domain Driven Development Builder, forked originally from https://github.com/analytically.
+    ]]></description>
+
+  <change-notes><![CDATA[
+      Meh
+    ]]>
+  </change-notes>
+
+  <idea-version since-build="131"/>
+
+  <actions>
+    <action id="biz.granum.jetbrains.BuilderGen" class="biz.granum.jetbrains.builder.GenerateBuilderAction" text="Generate Builder..."
+            description="Generate Builder for this class.">
+      <add-to-group group-id="GenerateGroup" anchor="last"/>
+    </action>
+
+  </actions>
+
+</idea-plugin>
