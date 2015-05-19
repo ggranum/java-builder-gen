@@ -94,10 +94,10 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
    */
   @NotNull
   private static List<PsiFieldMember> chooseFields(
-      PsiFile file,
-      Editor editor,
-      Project project,
-      final PropertiesComponent propertiesComponent) {
+                                                      PsiFile file,
+                                                      Editor editor,
+                                                      Project project,
+                                                      final PropertiesComponent propertiesComponent) {
     List<PsiFieldMember> members = getFields(file, editor);
     List<PsiFieldMember> selectedFields = Lists.newArrayList();
     if(!members.isEmpty() && !ApplicationManager.getApplication().isUnitTestMode()) {
@@ -107,9 +107,9 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
   }
 
   private static List<PsiFieldMember> getSelectedFieldsFromDialog(
-      Project project,
-      final PropertiesComponent propertiesComponent,
-      List<PsiFieldMember> members) {
+                                                                     Project project,
+                                                                     final PropertiesComponent propertiesComponent,
+                                                                     List<PsiFieldMember> members) {
 
     final JCheckBox withImplementValidated = new NonFocusableCheckBox("Implement Validated");
     withImplementValidated.setMnemonic('v');
@@ -125,7 +125,7 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
     final JCheckBox withJackson = new NonFocusableCheckBox("Enable Jackson marshaling for class.");
     withJackson.setMnemonic('w');
     withJackson.setToolTipText(
-        "Annotate the class and Builder fields with the Jackson Annotations required for marshaling/unmarshalling the class.");
+                                  "Annotate the class and Builder fields with the Jackson Annotations required for marshaling/unmarshalling the class.");
     withJackson.setSelected(propertiesComponent.isTrueValue(GENERATE_JSON_ANNOTATIONS));
     withJackson.addItemListener(new ItemListener() {
 
@@ -138,8 +138,8 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
 
     MemberChooser<PsiFieldMember> chooser = new MemberChooser<PsiFieldMember>(memberArray, false, true, project, null,
                                                                               new JCheckBox[]{
-                                                                                  withImplementValidated,
-                                                                                  withJackson
+                                                                                                 withImplementValidated,
+                                                                                                 withJackson
                                                                               });
 
     chooser.setTitle("Select Fields to Include in Builder");
@@ -181,9 +181,9 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
   }
 
   private static List<PsiFieldMember> collectFieldsInClass(
-      PsiElement element,
-      PsiClass accessObjectClass,
-      PsiClass clazz) {
+                                                              PsiElement element,
+                                                              PsiClass accessObjectClass,
+                                                              PsiClass clazz) {
     List<PsiFieldMember> classFieldMembers = Lists.newArrayList();
     for (PsiField field : clazz.getFields()) {
       // check access to the field from the builder container class (eg. private superclass fields)
@@ -192,10 +192,10 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
         PsiClass containingClass = field.getContainingClass();
         if(containingClass != null) {
           classFieldMembers.add(
-              new PsiFieldMember(field,
-                                 TypeConversionUtil.getSuperClassSubstitutor(containingClass,
-                                                                             clazz,
-                                                                             PsiSubstitutor.EMPTY)));
+                                   new PsiFieldMember(field,
+                                                      TypeConversionUtil.getSuperClassSubstitutor(containingClass,
+                                                                                                  clazz,
+                                                                                                  PsiSubstitutor.EMPTY)));
         }
       }
     }
@@ -245,9 +245,9 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
   }
 
   private static boolean fieldIsAccessibleFromBuilder(
-      PsiElement element,
-      PsiClass accessObjectClass,
-      PsiClass clazz, PsiField field) {
+                                                         PsiElement element,
+                                                         PsiClass accessObjectClass,
+                                                         PsiClass clazz, PsiField field) {
     PsiResolveHelper helper = JavaPsiFacade.getInstance(clazz.getProject()).getResolveHelper();
 
     return helper.isAccessible(field, accessObjectClass, clazz) && !PsiTreeUtil.isAncestor(field, element, false);
@@ -279,11 +279,11 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
     PsiElementFactory psiElementFactory;
 
     public MakeBuilderRunnable(
-        Project project,
-        PsiFile file,
-        Editor editor,
-        List<PsiFieldMember> fieldMembers,
-        PropertiesComponent propertiesComponent) {
+                                  Project project,
+                                  PsiFile file,
+                                  Editor editor,
+                                  List<PsiFieldMember> fieldMembers,
+                                  PropertiesComponent propertiesComponent) {
       this.file = file;
       this.editor = editor;
       this.fieldMembers = fieldMembers;
@@ -301,17 +301,12 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
       PsiClass clazz = PsiTreeUtil.getParentOfType(element, PsiClass.class);
 
       BuilderClassGenerator builderMaker = new BuilderClassGenerator.Builder()
-          .containerClass(clazz)
-          .fields(fieldMembers)
-          .implementJackson(implementJackson)
-          .implementValidated(implementValidated)
-          .build();
+                                               .containerClass(clazz)
+                                               .fields(fieldMembers)
+                                               .implementJackson(implementJackson)
+                                               .implementValidated(implementValidated)
+                                               .build();
       builderMaker.makeSelf(psiElementFactory);
-
-
-
     }
-
-
   }
 }

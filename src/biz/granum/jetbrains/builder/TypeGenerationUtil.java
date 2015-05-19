@@ -33,7 +33,7 @@ public class TypeGenerationUtil {
   @NonNls
   public static final String BUILDER_CLASS_NAME = "Builder";
 
-  public static PsiClass createClassFromText(String text, Project project){
+  public static PsiClass createClassFromText(String text, Project project) {
     final FileType type = JavaFileType.INSTANCE;
     PsiJavaFile aFile = (PsiJavaFile)PsiFileFactory.getInstance(project).createFileFromText(DUMMY_FILE_NAME, type, text);
     final PsiClass[] classes = aFile.getClasses();
@@ -47,7 +47,7 @@ public class TypeGenerationUtil {
     PsiClass builderClass;
     String builderClassBody;
     if(implementValidated) {
-      builderClassBody = "public static class %s extends biz.granum.validation.Validated {}";
+      builderClassBody = "public static class %s extends biz.granum.spork.common.validation.Validated {}";
     } else {
       builderClassBody = "public static class %s {}";
     }
@@ -65,9 +65,9 @@ public class TypeGenerationUtil {
   }
 
   public static PsiElement addAnnotation(
-      PsiClass target,
-      String annotationText,
-      PsiElementFactory psiElementFactory) {
+                                            PsiClass target,
+                                            String annotationText,
+                                            PsiElementFactory psiElementFactory) {
 
     PsiAnnotation annotation = psiElementFactory.createAnnotationFromText(annotationText, target);
 
@@ -78,12 +78,12 @@ public class TypeGenerationUtil {
   }
 
   static PsiField addField(
-      PsiClass target,
-      PsiElement after,
-      String name,
-      PsiType type,
-      PsiElementFactory psiElementFactory,
-      String... annotationsForField) {
+                              PsiClass target,
+                              PsiElement after,
+                              String name,
+                              PsiType type,
+                              PsiElementFactory psiElementFactory,
+                              String... annotationsForField) {
     PsiField theField = target.findFieldByName(name, false);
     if(theField != null && !areTypesPresentableEqual(theField.getType(), type)) {
       theField.delete();
@@ -100,7 +100,7 @@ public class TypeGenerationUtil {
       }
       theField = target.findFieldByName(name, false);
     }
-    if(theField == null || theField.getModifierList() == null){
+    if(theField == null || theField.getModifierList() == null) {
       throw new IllegalStateException("Field does not exist or does not have a modifier list.");
     }
 
@@ -115,19 +115,19 @@ public class TypeGenerationUtil {
   }
 
   static PsiElement addMethod(
-      PsiClass target,
-      PsiElement after,
-      String methodText,
-      PsiElementFactory psiElementFactory) {
+                                 PsiClass target,
+                                 PsiElement after,
+                                 String methodText,
+                                 PsiElementFactory psiElementFactory) {
     return addMethod(target, after, methodText, false, psiElementFactory);
   }
 
   static PsiElement addMethod(
-      PsiClass target,
-      PsiElement after,
-      String methodText,
-      boolean replace,
-      PsiElementFactory psiElementFactory) {
+                                 PsiClass target,
+                                 PsiElement after,
+                                 String methodText,
+                                 boolean replace,
+                                 PsiElementFactory psiElementFactory) {
     PsiMethod newMethod = psiElementFactory.createMethodFromText(methodText, null);
     PsiMethod theMethod = target.findMethodBySignature(newMethod, false);
 
@@ -182,7 +182,7 @@ public class TypeGenerationUtil {
 
   private static String stripJavaLang(String typeString) {
     return typeString.startsWith(JAVA_DOT_LANG) ? typeString.substring(
-        JAVA_DOT_LANG.length()) : typeString;
+                                                                          JAVA_DOT_LANG.length()) : typeString;
   }
 }
  

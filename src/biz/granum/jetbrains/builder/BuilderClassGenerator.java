@@ -72,8 +72,8 @@ public class BuilderClassGenerator {
   private void addJacksonAnnotationToContainerClass(PsiElementFactory psiElementFactory) {
     String deserialize = "@com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = " + containerClass.getName() + ".Builder.class)";
     TypeGenerationUtil.addAnnotation(containerClass,
-                                 deserialize,
-                                 psiElementFactory);
+                                     deserialize,
+                                     psiElementFactory);
   }
 
   private void makeBuildMethod(PsiElementFactory psiElementFactory) {
@@ -171,8 +171,6 @@ public class BuilderClassGenerator {
 
       return this;
     }
-
-
 
     public Builder implementJackson(boolean implementJackson) {
       this.implementJackson = implementJackson;

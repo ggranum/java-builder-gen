@@ -32,19 +32,19 @@ public class BuilderField {
   }
 
   public void makeSelf(
-      boolean implementJackson,
-      boolean implementValidated,
-      PsiClass targetClass,
-      BuilderField afterField,
-      PsiElementFactory psiElementFactory) {
+                          boolean implementJackson,
+                          boolean implementValidated,
+                          PsiClass targetClass,
+                          BuilderField afterField,
+                          PsiElementFactory psiElementFactory) {
     makeField(implementJackson, implementValidated, targetClass, afterField, psiElementFactory);
     makeMethod(targetClass, afterField, psiElementFactory);
   }
 
   private void makeMethod(
-      PsiClass targetClass,
-      BuilderField afterField,
-      PsiElementFactory psiElementFactory) {
+                             PsiClass targetClass,
+                             BuilderField afterField,
+                             PsiElementFactory psiElementFactory) {
     // public Builder something(SomeType someValue){ this.value = someValue; return this; }
     String methodName = field.getName();
     PsiType type = field.getType();
@@ -66,11 +66,11 @@ public class BuilderField {
   }
 
   private void makeField(
-      boolean implementJackson,
-      boolean implementValidated,
-      PsiClass targetClass,
-      BuilderField afterField,
-      PsiElementFactory psiElementFactory) {
+                            boolean implementJackson,
+                            boolean implementValidated,
+                            PsiClass targetClass,
+                            BuilderField afterField,
+                            PsiElementFactory psiElementFactory) {
     PsiType type = field.getType();
     if(type instanceof PsiPrimitiveType) {
       type = ((PsiPrimitiveType)type).getBoxedType(field);
@@ -83,7 +83,6 @@ public class BuilderField {
       annotations.add("@com.fasterxml.jackson.annotation.JsonProperty");
     }
 
-
     if("Optional".equals(fieldClassName)) {
       PsiType[] parameters = ((PsiClassReferenceType)type).getParameters();
       type = parameters[0];
@@ -94,9 +93,7 @@ public class BuilderField {
                                                     field.getName(),
                                                     type,
                                                     psiElementFactory,
-                                                    annotations.toArray(new String[annotations.size()])    );
-
-
+                                                    annotations.toArray(new String[annotations.size()]));
   }
 
   private List<String> generateValidationAnnotationsText(String fieldName, PsiType type) {
@@ -114,7 +111,6 @@ public class BuilderField {
       items.add("@javax.validation.constraints.NotNull");
     }
 
-
     if("String".equals(fieldClassName)) {
       if(fieldName.toLowerCase().contains("email")) {
         items.add("@org.hibernate.validator.constraints.Email");
@@ -127,7 +123,6 @@ public class BuilderField {
     } else if("List".equals(fieldClassName) || "Set".equals(fieldClassName)) {
       items.add("@javax.validation.constraints.Size(min = 0, max = 100)");
     }
-
 
     return items;
   }
