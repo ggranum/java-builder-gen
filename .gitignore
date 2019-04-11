@@ -1,4 +1,97 @@
-target/
+#######
+#
+# A fairly generic template ignore file for Java projects. Shares the sharable IntelliJ project files if present.
+# Supports Gradle Wrapper.
+#####
+
+# Local files, etc
+*.local.*
+local.properites
+
+# Cruft
+*.class
+*.tmp
+*.mwb.bak
+coverage-error.log
+
+# Intellij Configuration
+.idea/*.xml
 *.iml
-.idea/
-.DS_STORE
+.idea/artifacts/
+.idea/copyright/*.xml
+.idea/dictionaries/*.xml
+.idea/inspectionProfiles/*.xml
+.idea/libraries/*.xml
+.idea/scopes/*.xml
+
+### Intellij Keepers such as inspections and formatting styles. "Un-ignore" by specific inclusion, due to potential
+### for cruft (e.g. named dictionaries)
+!.idea/.name
+!.idea/checkstyle-idea.xml
+!.idea/compiler.xml
+!.idea/encodings.xml
+#!.idea/jsLibraryMappings.xml
+#!.idea/misc.xml
+!.idea/modules.xml
+
+!.idea/copyright/profiles_settings.xml
+!.idea/inspectionProfiles/Project_Default.xml
+!.idea/inspectionProfiles/profiles_settings.xml
+
+
+# Gradle Configuration
+.gradle/
+
+#Build dirs
+build/
+deploy/
+out/
+
+#### Below from http://help.github.com/ignore-files/ ####
+###################################################
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.war
+*.ear
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sqlite
+*.h2.db
+
+# OS generated files #
+######################
+.DS_Store*
+ehthumbs.db
+#Icon?
+Thumbs.db
+
+#### Required jar files (do NOT ignore; we do want these committed)  ####
+# Gradle wrapper
+!gradle-wrapper.jar
+
+# Certs, key files, password files.
+keystore
+*.cert
+*.crt
+*.pkcs12
+*.key
+keystore.properties
+*.csr
+*.ks
+
+
+# Java Cryptographic Extensions, if needed.
+!local_policy.jar
+!US_export_policy.jar

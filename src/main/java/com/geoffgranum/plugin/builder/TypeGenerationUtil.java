@@ -1,4 +1,4 @@
-package biz.granum.jetbrains.builder;
+package com.geoffgranum.plugin.builder;
 
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.fileTypes.FileType;

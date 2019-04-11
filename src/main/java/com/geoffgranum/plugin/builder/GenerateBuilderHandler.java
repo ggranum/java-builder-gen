@@ -1,7 +1,6 @@
-package biz.granum.jetbrains.builder;
+package com.geoffgranum.plugin.builder;
 
 import com.google.common.collect.Lists;
-import com.intellij.codeInsight.CodeInsightUtilBase;
 import com.intellij.codeInsight.generation.OverrideImplementUtil;
 import com.intellij.codeInsight.generation.PsiFieldMember;
 import com.intellij.ide.util.MemberChooser;
@@ -9,6 +8,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.lang.LanguageCodeInsightActionHandler;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -55,7 +55,7 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
 
   @Override
   public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
-    if(!CodeInsightUtilBase.prepareEditorForWrite(editor)) {
+    if(!EditorModificationUtil.checkModificationAllowed(editor)) {
       return;
     }
     if(!FileDocumentManager.getInstance().requestWriting(editor.getDocument(), project)) {

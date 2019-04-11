@@ -1,0 +1,29 @@
+<idea-plugin >
+  <id>com.geoffgranum.plugin.BuilderGen</id>
+  <name>BuilderGen</name>
+  <version>0.2</version>
+  <vendor email="buildergen@geoffgranum.com">Geoff M. Granum</vendor>
+
+  <description><![CDATA[
+      Directive+Domain Driven Development Builder, forked originally from https://github.com/analytically.
+
+    ]]></description>
+
+  <change-notes><![CDATA[
+      Configure for initial release.<br/>
+      Create a simple class with a handful of final fields and no constructor to demonstrate.<br/>
+<br/><br/>
+      WARNING: This plugin does not 'update' the builders it generates when it is re-run. It overwrites them - and any changes you may have made.
+
+    ]]>
+  </change-notes>
+
+  <actions>
+    <action id="com.geoffgranum.plugin.BuilderGen" class="com.geoffgranum.plugin.builder.GenerateBuilderAction" text="Generate Builder..."
+            description="Generate Builder for this class.">
+      <add-to-group group-id="GenerateGroup" anchor="last"/>
+    </action>
+
+  </actions>
+
+</idea-plugin>

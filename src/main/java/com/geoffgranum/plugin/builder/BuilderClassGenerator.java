@@ -1,4 +1,4 @@
-package biz.granum.jetbrains.builder;
+package com.geoffgranum.plugin.builder;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;

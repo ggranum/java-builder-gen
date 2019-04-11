@@ -1,4 +1,4 @@
-package biz.granum.jetbrains.builder;
+package com.geoffgranum.plugin.builder;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.BaseCodeInsightAction;
