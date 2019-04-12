@@ -22,7 +22,7 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+      Jackson Annotations should not be duplicated when Generate is re-run.
+      """
 }
 

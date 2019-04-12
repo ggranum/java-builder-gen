@@ -3,26 +3,14 @@ package com.geoffgranum.plugin.builder;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiModifierList;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiParameterList;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NonNls;
 
 /**
  * @author Geoff M. Granum
  */
-public class TypeGenerationUtil {
+class TypeGenerationUtil {
 
   // From PsiJavaParserFacadeImpl#createClassFromText, which only allows you to specify the *body*.
   private static final String DUMMY_FILE_NAME = "_Dummy_." + JavaFileType.INSTANCE.getDefaultExtension();
@@ -31,9 +19,9 @@ public class TypeGenerationUtil {
   private static final String JAVA_DOT_LANG = "java.lang.";
 
   @NonNls
-  public static final String BUILDER_CLASS_NAME = "Builder";
+  static final String BUILDER_CLASS_NAME = "Builder";
 
-  public static PsiClass createClassFromText(String text, Project project) {
+  private static PsiClass createClassFromText(String text, Project project) {
     final FileType type = JavaFileType.INSTANCE;
     PsiJavaFile aFile = (PsiJavaFile)PsiFileFactory.getInstance(project).createFileFromText(DUMMY_FILE_NAME, type, text);
     final PsiClass[] classes = aFile.getClasses();
@@ -64,10 +52,7 @@ public class TypeGenerationUtil {
     return builderClass;
   }
 
-  public static PsiElement addAnnotation(
-                                            PsiClass target,
-                                            String annotationText,
-                                            PsiElementFactory psiElementFactory) {
+  static PsiElement addAnnotation(PsiClass target, String annotationText, PsiElementFactory psiElementFactory) {
 
     PsiAnnotation annotation = psiElementFactory.createAnnotationFromText(annotationText, target);
 
@@ -153,7 +138,7 @@ public class TypeGenerationUtil {
     return theMethod;
   }
 
-  static boolean areParameterListsEqual(PsiParameterList paramList1, PsiParameterList paramList2) {
+  private static boolean areParameterListsEqual(PsiParameterList paramList1, PsiParameterList paramList2) {
     if(paramList1.getParametersCount() != paramList2.getParametersCount()) {
       return false;
     }
@@ -171,7 +156,7 @@ public class TypeGenerationUtil {
     return true;
   }
 
-  static boolean areTypesPresentableEqual(PsiType type1, PsiType type2) {
+  private static boolean areTypesPresentableEqual(PsiType type1, PsiType type2) {
     if(type1 != null && type2 != null) {
       String type1Canonical = stripJavaLang(type1.getPresentableText());
       String type2Canonical = stripJavaLang(type2.getPresentableText());

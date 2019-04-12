@@ -12,39 +12,30 @@ import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiResolveHelper;
-import com.intellij.psi.PsiSubstitutor;
+import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.TypeConversionUtil;
 import com.intellij.ui.NonFocusableCheckBox;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.JCheckBox;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
 
 public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler {
 
   @NonNls
-  private static final String PROP_NEW_BUILDER_METHOD = "biz.granum.jetbrains.BuilderGen.jsonAnnotations";
+  private static final String PROP_NEW_BUILDER_METHOD = "com.geoffgranum.plugin.BuilderGen.jsonAnnotations";
 
   @NonNls
-  private static final String IMPLEMENT_VALIDATED = "biz.granum.jetbrains.BuilderGen.implementValidated";
+  private static final String IMPLEMENT_VALIDATED = "com.geoffgranum.plugin.BuilderGen.implementValidated";
 
   @NonNls
-  private static final String GENERATE_JSON_ANNOTATIONS = "biz.granum.jetbrains.BuilderGen.jsonAnnotations";
+  private static final String GENERATE_JSON_ANNOTATIONS = "com.geoffgranum.plugin.BuilderGen.jsonAnnotations";
 
   @Override
   public boolean isValidFor(Editor editor, PsiFile file) {

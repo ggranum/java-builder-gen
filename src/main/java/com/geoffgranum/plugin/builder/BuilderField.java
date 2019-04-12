@@ -8,20 +8,21 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Geoff M. Granum
  */
-public class BuilderField {
+class BuilderField {
 
-  public final PsiField field;
+  final PsiField field;
   private PsiField builderClassField;
   private PsiElement builderClassMethod;
   private String fieldClassName;
 
-  public BuilderField(PsiField field) {
+  BuilderField(PsiField field) {
     this.field = field;
     PsiType type = field.getType();
     if(type instanceof PsiClassReferenceType) {
@@ -31,12 +32,11 @@ public class BuilderField {
     }
   }
 
-  public void makeSelf(
-                          boolean implementJackson,
-                          boolean implementValidated,
-                          PsiClass targetClass,
-                          BuilderField afterField,
-                          PsiElementFactory psiElementFactory) {
+  void makeSelf(boolean implementJackson,
+                boolean implementValidated,
+                PsiClass targetClass,
+                BuilderField afterField,
+                PsiElementFactory psiElementFactory) {
     makeField(implementJackson, implementValidated, targetClass, afterField, psiElementFactory);
     makeMethod(targetClass, afterField, psiElementFactory);
   }
@@ -93,11 +93,11 @@ public class BuilderField {
                                                     field.getName(),
                                                     type,
                                                     psiElementFactory,
-                                                    annotations.toArray(new String[annotations.size()]));
+                                                    annotations.toArray(new String[0]));
   }
 
   private List<String> generateValidationAnnotationsText(String fieldName, PsiType type) {
-    List<String> items = new ArrayList<String>();
+    List<String> items = new ArrayList<>();
 
     String fieldClassName;
     if(type instanceof PsiClassReferenceType) {
@@ -127,7 +127,7 @@ public class BuilderField {
     return items;
   }
 
-  public String toConstructorDeclaration() {
+  String toConstructorDeclaration() {
     String declaration;
     if("Optional".equals(fieldClassName)) {
       declaration = String.format("%1$s = Optional.fromNullable( builder.%1$s );\n", field.getName());
@@ -137,7 +137,7 @@ public class BuilderField {
     return declaration;
   }
 
-  public String copyCtorInitializationString() {
+  String copyCtorInitializationString() {
     String fmt = "%1$s = copy.%1$s;\n";
     return String.format(fmt, field.getName());
   }

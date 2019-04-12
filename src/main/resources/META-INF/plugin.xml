@@ -1,29 +1,48 @@
-<idea-plugin >
-  <id>com.geoffgranum.plugin.BuilderGen</id>
-  <name>BuilderGen</name>
-  <version>0.2</version>
-  <vendor email="buildergen@geoffgranum.com">Geoff M. Granum</vendor>
+<idea-plugin>
+    <id>com.geoffgranum.plugin.BuilderGen</id>
+    <name>BuilderGen</name>
+    <version>0.2</version>
+    <vendor email="buildergen@geoffgranum.com">Geoff M. Granum</vendor>
 
-  <description><![CDATA[
-      Directive+Domain Driven Development Builder, forked originally from https://github.com/analytically.
+    <description><![CDATA[
+      <h1>Builder Generator for immutable POJO models.</h1>
 
+      <p>What's the point of a builder pattern if your isn't immutable? If your model is immutable, what's
+      the point of getter access?</p>
+      <p>Create a builder from your final fields. Add your @Immutable annotation of choice and make the class final.
+      Done.
+      <p>Alt-Enter ( "Show Intention Actions" ) -> Generate Builder. If the menu entry is missing, be sure the cursor
+       is on a blank line within the class.
+       <p> Or invoke via right-click menu
+       <p> <em>ONLY SUPPORTS FINAL FIELDS.</em>
+
+      <ul>
+      <li> Generates Copy constructor and example usage code comment on builder constructor.
+      <li> Optionally applies Jackson Annotations to your builders. Parse from JSON straight into an immutable POJO.
+      <li> Optionally applies Hibernate Validations, with the use of JavaSpork project ( https://github.com/ggranum/java-spork )
+      <li> <em> Overwrites on each invocation!</em>. Be careful. Replacing this with 'update' is high priority, but also
+      quite complex.
+      </ul>
+
+        <em>forked originally from https://github.com/analytically.<em>
     ]]></description>
 
-  <change-notes><![CDATA[
+    <change-notes><![CDATA[
       Configure for initial release.<br/>
       Create a simple class with a handful of final fields and no constructor to demonstrate.<br/>
 <br/><br/>
-      WARNING: This plugin does not 'update' the builders it generates when it is re-run. It overwrites them - and any changes you may have made.
+      <em>WARNING: This plugin does not 'update' the builders it generates when it is re-run. It overwrites them - and any changes you may have made.</em>
 
     ]]>
-  </change-notes>
+    </change-notes>
 
-  <actions>
-    <action id="com.geoffgranum.plugin.BuilderGen" class="com.geoffgranum.plugin.builder.GenerateBuilderAction" text="Generate Builder..."
-            description="Generate Builder for this class.">
-      <add-to-group group-id="GenerateGroup" anchor="last"/>
-    </action>
+    <actions>
+        <action id="com.geoffgranum.plugin.BuilderGen" class="com.geoffgranum.plugin.builder.GenerateBuilderAction"
+                text="Generate Builder..."
+                description="Generate Builder for this class.">
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
+        </action>
 
-  </actions>
+    </actions>
 
 </idea-plugin>
