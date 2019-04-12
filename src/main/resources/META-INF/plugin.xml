@@ -3,6 +3,7 @@
     <name>BuilderGen</name>
     <version>0.2</version>
     <vendor email="buildergen@geoffgranum.com">Geoff M. Granum</vendor>
+    <depends>com.intellij.modules.java</depends>
 
     <description><![CDATA[
       <h1>Builder Generator for immutable POJO models.</h1>
