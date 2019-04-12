@@ -21,8 +21,6 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.Collections;
 import java.util.List;
 
@@ -75,7 +73,7 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
   /**
    * Check the current Intellij scope for any fields, regardless of access level, scope, etc.
    */
-  public static boolean isApplicable(PsiFile file, Editor editor) {
+  private static boolean isApplicable(PsiFile file, Editor editor) {
     List<PsiFieldMember> targetElements = getFields(file, editor);
     return !targetElements.isEmpty();
   }
@@ -106,32 +104,23 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
     withImplementValidated.setMnemonic('v');
     withImplementValidated.setToolTipText("Add Hibernate validations stubs to builder fields and implement the Validated class.");
     withImplementValidated.setSelected(propertiesComponent.isTrueValue(IMPLEMENT_VALIDATED));
-    withImplementValidated.addItemListener(new ItemListener() {
-
-      public void itemStateChanged(ItemEvent e) {
-        propertiesComponent.setValue(IMPLEMENT_VALIDATED, Boolean.toString(withImplementValidated.isSelected()));
-      }
-    });
+    withImplementValidated.addItemListener(e -> propertiesComponent.setValue(IMPLEMENT_VALIDATED, Boolean.toString(withImplementValidated.isSelected())));
 
     final JCheckBox withJackson = new NonFocusableCheckBox("Enable Jackson marshaling for class.");
     withJackson.setMnemonic('w');
     withJackson.setToolTipText(
                                   "Annotate the class and Builder fields with the Jackson Annotations required for marshaling/unmarshalling the class.");
     withJackson.setSelected(propertiesComponent.isTrueValue(GENERATE_JSON_ANNOTATIONS));
-    withJackson.addItemListener(new ItemListener() {
+    withJackson.addItemListener(e -> propertiesComponent.setValue(GENERATE_JSON_ANNOTATIONS, Boolean.toString(withJackson.isSelected())));
 
-      public void itemStateChanged(ItemEvent e) {
-        propertiesComponent.setValue(GENERATE_JSON_ANNOTATIONS, Boolean.toString(withJackson.isSelected()));
-      }
-    });
+    PsiFieldMember[] memberArray = members.toArray(new PsiFieldMember[0]);
 
-    PsiFieldMember[] memberArray = members.toArray(new PsiFieldMember[members.size()]);
-
-    MemberChooser<PsiFieldMember> chooser = new MemberChooser<PsiFieldMember>(memberArray, false, true, project, null,
-                                                                              new JCheckBox[]{
-                                                                                                 withImplementValidated,
-                                                                                                 withJackson
-                                                                              });
+    MemberChooser<PsiFieldMember> chooser = new MemberChooser<>(memberArray,
+                                                                false,
+                                                                true,
+                                                                project,
+                                                                null,
+                                                                new JCheckBox[]{ withImplementValidated, withJackson });
 
     chooser.setTitle("Select Fields to Include in Builder");
     chooser.selectElements(memberArray);
@@ -217,6 +206,7 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
   private static boolean ignoringField(PsiClass accessObjectClass, PsiElement clazz, PsiField field) {
     return field.hasModifierProperty(PsiModifier.STATIC)
            || !field.hasModifierProperty(PsiModifier.FINAL)
+           || field.getName() == null
            || isAllUpperCase(field.getName())
            || isLoggingField(field)
            || isIgnoredFinalField(accessObjectClass, clazz, field);
@@ -269,12 +259,11 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
     CodeStyleManager codeStyleManager;
     PsiElementFactory psiElementFactory;
 
-    public MakeBuilderRunnable(
-                                  Project project,
-                                  PsiFile file,
-                                  Editor editor,
-                                  List<PsiFieldMember> fieldMembers,
-                                  PropertiesComponent propertiesComponent) {
+    MakeBuilderRunnable(Project project,
+                        PsiFile file,
+                        Editor editor,
+                        List<PsiFieldMember> fieldMembers,
+                        PropertiesComponent propertiesComponent) {
       this.file = file;
       this.editor = editor;
       this.fieldMembers = fieldMembers;
