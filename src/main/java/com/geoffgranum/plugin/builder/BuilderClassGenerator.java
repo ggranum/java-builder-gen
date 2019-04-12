@@ -3,6 +3,7 @@ package com.geoffgranum.plugin.builder;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.intellij.codeInsight.generation.PsiFieldMember;
+import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.codeStyle.CodeStyleManager;
@@ -33,10 +34,12 @@ class BuilderClassGenerator {
 
   void makeSelf(PsiElementFactory psiElementFactory) {
     builderClass = containerClass.findInnerClassByName(TypeGenerationUtil.BUILDER_CLASS_NAME, false);
-    if(builderClass == null) {
-      builderClass = TypeGenerationUtil.createBuilderClass(containerClass, implementValidated);
-      builderClass = (PsiClass)containerClass.add(builderClass);
+    if (builderClass != null) {
+      // @todo: ggranum: Scrap info about existing builder class so we can augment it.
+      builderClass.delete();
     }
+    builderClass = TypeGenerationUtil.createBuilderClass(containerClass, implementValidated);
+    builderClass = (PsiClass)containerClass.add(builderClass);
 
     makeContainerClassCtorTakingBuilder(psiElementFactory);
 
@@ -72,6 +75,14 @@ class BuilderClassGenerator {
 
   private void addJacksonAnnotationToContainerClass(PsiElementFactory psiElementFactory) {
     String deserialize = "@com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = " + containerClass.getName() + ".Builder.class)";
+
+    PsiAnnotation jsonDeserializerAnnotation =
+      containerClass.getAnnotation("com.fasterxml.jackson.databind.annotation.JsonDeserialize");
+    if (jsonDeserializerAnnotation != null) {
+      // probably don't need to delete and re-add, but on the off chance that the className was changed without
+      // the annotation being updated. Or whatever
+      jsonDeserializerAnnotation.delete();
+    }
     TypeGenerationUtil.addAnnotation(containerClass,
                                      deserialize,
                                      psiElementFactory);

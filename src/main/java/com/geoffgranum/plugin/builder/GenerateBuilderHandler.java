@@ -36,82 +36,64 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
   private static final String GENERATE_JSON_ANNOTATIONS = "com.geoffgranum.plugin.BuilderGen.jsonAnnotations";
 
   @Override
-  public boolean isValidFor(Editor editor, PsiFile file) {
-    return file instanceof PsiJavaFile
-           && OverrideImplementUtil.getContextClass(editor.getProject(), editor, file, false) != null
-           && isApplicable(file, editor);
-  }
-
-  @Override
   public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
-    if(!EditorModificationUtil.checkModificationAllowed(editor)) {
+    if (!EditorModificationUtil.checkModificationAllowed(editor)) {
       return;
     }
-    if(!FileDocumentManager.getInstance().requestWriting(editor.getDocument(), project)) {
+    if (!FileDocumentManager.getInstance().requestWriting(editor.getDocument(), project)) {
       return;
     }
     PsiDocumentManager.getInstance(project).commitAllDocuments();
 
     PropertiesComponent propertiesComponent = PropertiesComponent.getInstance();
     List<PsiFieldMember> fieldMembers = chooseFields(file, editor, project, propertiesComponent);
-    if(fieldMembers.isEmpty()) {
+    if (fieldMembers.isEmpty()) {
       return;
     }
 
-    ApplicationManager.getApplication().runWriteAction(new MakeBuilderRunnable(project,
-                                                                               file,
-                                                                               editor,
-                                                                               fieldMembers,
-                                                                               propertiesComponent));
-  }
-
-  @Override
-  public boolean startInWriteAction() {
-    return false;
+    ApplicationManager.getApplication()
+                      .runWriteAction(new MakeBuilderRunnable(project,
+                                                              file,
+                                                              editor,
+                                                              fieldMembers,
+                                                              propertiesComponent));
   }
 
   /**
-   * Check the current Intellij scope for any fields, regardless of access level, scope, etc.
-   */
-  private static boolean isApplicable(PsiFile file, Editor editor) {
-    List<PsiFieldMember> targetElements = getFields(file, editor);
-    return !targetElements.isEmpty();
-  }
-
-  /**
-
+   *
    */
   @NotNull
-  private static List<PsiFieldMember> chooseFields(
-                                                      PsiFile file,
-                                                      Editor editor,
-                                                      Project project,
-                                                      final PropertiesComponent propertiesComponent) {
+  private static List<PsiFieldMember> chooseFields(PsiFile file,
+                                                   Editor editor,
+                                                   Project project,
+                                                   final PropertiesComponent propertiesComponent) {
     List<PsiFieldMember> members = getFields(file, editor);
     List<PsiFieldMember> selectedFields = Lists.newArrayList();
-    if(!members.isEmpty() && !ApplicationManager.getApplication().isUnitTestMode()) {
+    if (!members.isEmpty() && !ApplicationManager.getApplication().isUnitTestMode()) {
       selectedFields.addAll(getSelectedFieldsFromDialog(project, propertiesComponent, members));
     }
     return selectedFields;
   }
 
-  private static List<PsiFieldMember> getSelectedFieldsFromDialog(
-                                                                     Project project,
-                                                                     final PropertiesComponent propertiesComponent,
-                                                                     List<PsiFieldMember> members) {
+  private static List<PsiFieldMember> getSelectedFieldsFromDialog(Project project,
+                                                                  final PropertiesComponent propertiesComponent,
+                                                                  List<PsiFieldMember> members) {
 
     final JCheckBox withImplementValidated = new NonFocusableCheckBox("Implement Validated");
     withImplementValidated.setMnemonic('v');
-    withImplementValidated.setToolTipText("Add Hibernate validations stubs to builder fields and implement the Validated class.");
+    withImplementValidated.setToolTipText(
+      "Add Hibernate validations stubs to builder fields and implement the Validated class.");
     withImplementValidated.setSelected(propertiesComponent.isTrueValue(IMPLEMENT_VALIDATED));
-    withImplementValidated.addItemListener(e -> propertiesComponent.setValue(IMPLEMENT_VALIDATED, Boolean.toString(withImplementValidated.isSelected())));
+    withImplementValidated.addItemListener(e -> propertiesComponent.setValue(IMPLEMENT_VALIDATED,
+                                                                             Boolean.toString(withImplementValidated.isSelected())));
 
     final JCheckBox withJackson = new NonFocusableCheckBox("Enable Jackson marshaling for class.");
     withJackson.setMnemonic('w');
     withJackson.setToolTipText(
-                                  "Annotate the class and Builder fields with the Jackson Annotations required for marshaling/unmarshalling the class.");
+      "Annotate the class and Builder fields with the Jackson Annotations required for marshaling/unmarshalling the class.");
     withJackson.setSelected(propertiesComponent.isTrueValue(GENERATE_JSON_ANNOTATIONS));
-    withJackson.addItemListener(e -> propertiesComponent.setValue(GENERATE_JSON_ANNOTATIONS, Boolean.toString(withJackson.isSelected())));
+    withJackson.addItemListener(e -> propertiesComponent.setValue(GENERATE_JSON_ANNOTATIONS,
+                                                                  Boolean.toString(withJackson.isSelected())));
 
     PsiFieldMember[] memberArray = members.toArray(new PsiFieldMember[0]);
 
@@ -128,12 +110,27 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
 
     List<PsiFieldMember> selectedElements;
 
-    if(chooser.getExitCode() != DialogWrapper.OK_EXIT_CODE) {
+    if (chooser.getExitCode() != DialogWrapper.OK_EXIT_CODE) {
       selectedElements = Collections.emptyList();
     } else {
       selectedElements = chooser.getSelectedElements();
     }
     return selectedElements;
+  }
+
+  @Override
+  public boolean isValidFor(Editor editor, PsiFile file) {
+    return file instanceof PsiJavaFile
+           && OverrideImplementUtil.getContextClass(editor.getProject(), editor, file, false) != null
+           && isApplicable(file, editor);
+  }
+
+  /**
+   * Check the current Intellij scope for any fields, regardless of access level, scope, etc.
+   */
+  private static boolean isApplicable(PsiFile file, Editor editor) {
+    List<PsiFieldMember> targetElements = getFields(file, editor);
+    return !targetElements.isEmpty();
   }
 
   /**
@@ -145,12 +142,12 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
     List<PsiFieldMember> result = Lists.newArrayList();
     int offset = editor.getCaretModel().getOffset();
     PsiElement generateBuilderFor = file.findElementAt(offset);
-    if(generateBuilderFor != null) {
+    if (generateBuilderFor != null) {
       PsiClass clazz = PsiTreeUtil.getParentOfType(generateBuilderFor, PsiClass.class);
       PsiClass classToExtractFieldsFrom = clazz;
       while (classToExtractFieldsFrom != null) {
         result.addAll(0, collectFieldsInClass(generateBuilderFor, clazz, classToExtractFieldsFrom));
-        if(classToExtractFieldsFrom.hasModifierProperty(PsiModifier.STATIC)) {
+        if (classToExtractFieldsFrom.hasModifierProperty(PsiModifier.STATIC)) {
           break;
         }
         classToExtractFieldsFrom = classToExtractFieldsFrom.getSuperClass();
@@ -160,39 +157,26 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
     return result;
   }
 
-  private static List<PsiFieldMember> collectFieldsInClass(
-                                                              PsiElement element,
-                                                              PsiClass accessObjectClass,
-                                                              PsiClass clazz) {
+  private static List<PsiFieldMember> collectFieldsInClass(PsiElement element,
+                                                           PsiClass accessObjectClass,
+                                                           PsiClass clazz) {
     List<PsiFieldMember> classFieldMembers = Lists.newArrayList();
     for (PsiField field : clazz.getFields()) {
       // check access to the field from the builder container class (eg. private superclass fields)
-      if(fieldIsAccessibleFromBuilder(element, accessObjectClass, clazz, field)
-         && !ignoringField(accessObjectClass, clazz, field)) {
+      if (fieldIsAccessibleFromBuilder(element, accessObjectClass, clazz, field) && !ignoringField(accessObjectClass,
+                                                                                                   clazz,
+                                                                                                   field)) {
         PsiClass containingClass = field.getContainingClass();
-        if(containingClass != null) {
-          classFieldMembers.add(
-                                   new PsiFieldMember(field,
-                                                      TypeConversionUtil.getSuperClassSubstitutor(containingClass,
-                                                                                                  clazz,
-                                                                                                  PsiSubstitutor.EMPTY)));
+        if (containingClass != null) {
+          classFieldMembers.add(new PsiFieldMember(field,
+                                                   TypeConversionUtil.getSuperClassSubstitutor(containingClass,
+                                                                                               clazz,
+                                                                                               PsiSubstitutor.EMPTY)));
         }
       }
     }
 
     return classFieldMembers;
-  }
-
-  private static boolean isLoggingField(PsiField field) {
-    return "org.apache.log4j.Logger".equals(field.getType().getCanonicalText())
-           || "org.apache.logging.log4j.Logger".equals(field.getType().getCanonicalText())
-           || "java.util.logging.Logger".equals(field.getType().getCanonicalText())
-           || "org.slf4j.Logger".equals(field.getType().getCanonicalText())
-           || "ch.qos.logback.classic.Logger".equals(field.getType().getCanonicalText())
-           || "net.sf.microlog.core.Logger".equals(field.getType().getCanonicalText())
-           || "org.apache.commons.logging.Log".equals(field.getType().getCanonicalText())
-           || "org.pmw.tinylog.Logger".equals(field.getType().getCanonicalText())
-           || "org.jboss.logging.Logger".equals(field.getType().getCanonicalText());
   }
 
   /**
@@ -212,51 +196,72 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
            || isIgnoredFinalField(accessObjectClass, clazz, field);
   }
 
+  private static boolean isLoggingField(PsiField field) {
+    return "org.apache.log4j.Logger".equals(field.getType().getCanonicalText())
+           || "org.apache.logging.log4j.Logger".equals(field.getType().getCanonicalText())
+           || "java.util.logging.Logger".equals(field.getType().getCanonicalText())
+           || "org.slf4j.Logger".equals(field.getType().getCanonicalText())
+           || "ch.qos.logback.classic.Logger".equals(field.getType().getCanonicalText())
+           || "net.sf.microlog.core.Logger".equals(field.getType().getCanonicalText())
+           || "org.apache.commons.logging.Log".equals(field.getType().getCanonicalText())
+           || "org.pmw.tinylog.Logger".equals(field.getType().getCanonicalText())
+           || "org.jboss.logging.Logger".equals(field.getType().getCanonicalText());
+  }
+
   private static boolean isIgnoredFinalField(PsiClass accessObjectClass, PsiElement clazz, PsiField field) {
     boolean ignored = false;
-    if(field.hasModifierProperty(PsiModifier.FINAL)) {
-      if(field.getInitializer() != null) {
+    if (field.hasModifierProperty(PsiModifier.FINAL)) {
+      if (field.getInitializer() != null) {
         ignored = true; // remove final fields that are assigned in the declaration
       }
-      if(!accessObjectClass.isEquivalentTo(clazz) && !accessObjectClass.hasModifierProperty(PsiModifier.ABSTRACT)) {
+      if (!accessObjectClass.isEquivalentTo(clazz) && !accessObjectClass.hasModifierProperty(PsiModifier.ABSTRACT)) {
         ignored = true; // remove final superclass fields
       }
     }
     return ignored;
   }
 
-  private static boolean fieldIsAccessibleFromBuilder(
-                                                         PsiElement element,
-                                                         PsiClass accessObjectClass,
-                                                         PsiClass clazz, PsiField field) {
-    PsiResolveHelper helper = JavaPsiFacade.getInstance(clazz.getProject()).getResolveHelper();
-
-    return helper.isAccessible(field, accessObjectClass, clazz) && !PsiTreeUtil.isAncestor(field, element, false);
-  }
-
   /**
    * Does the string have a lowercase character?
    *
    * @param s the string to test.
-   *
    * @return true if the string has a lowercase character, false if not.
    */
   private static boolean isAllUpperCase(String s) {
     for (int i = 0; i < s.length(); i++) {
-      if(Character.isLowerCase(s.charAt(i))) {
+      if (Character.isLowerCase(s.charAt(i))) {
         return false;
       }
     }
     return true;
   }
 
+  private static boolean fieldIsAccessibleFromBuilder(PsiElement element,
+                                                      PsiClass accessObjectClass,
+                                                      PsiClass clazz,
+                                                      PsiField field) {
+    PsiResolveHelper helper = JavaPsiFacade.getInstance(clazz.getProject()).getResolveHelper();
+
+    return helper.isAccessible(field, accessObjectClass, clazz) && !PsiTreeUtil.isAncestor(field, element, false);
+  }
+
+  @Override
+  public boolean startInWriteAction() {
+    return false;
+  }
+
   private static class MakeBuilderRunnable implements Runnable {
 
     private final PsiFile file;
+
     private final Editor editor;
+
     private final List<PsiFieldMember> fieldMembers;
+
     private final PropertiesComponent propertiesComponent;
+
     CodeStyleManager codeStyleManager;
+
     PsiElementFactory psiElementFactory;
 
     MakeBuilderRunnable(Project project,
@@ -280,12 +285,11 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
       PsiElement element = file.findElementAt(editor.getCaretModel().getOffset());
       PsiClass clazz = PsiTreeUtil.getParentOfType(element, PsiClass.class);
 
-      BuilderClassGenerator builderMaker = new BuilderClassGenerator.Builder()
-                                               .containerClass(clazz)
-                                               .fields(fieldMembers)
-                                               .implementJackson(implementJackson)
-                                               .implementValidated(implementValidated)
-                                               .build();
+      BuilderClassGenerator builderMaker = new BuilderClassGenerator.Builder().containerClass(clazz)
+                                                                              .fields(fieldMembers)
+                                                                              .implementJackson(implementJackson)
+                                                                              .implementValidated(implementValidated)
+                                                                              .build();
       builderMaker.makeSelf(psiElementFactory);
     }
   }
