@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.geoffgranum.plugin'
-version '1.0.2-SNAPSHOT'
+version '1.0.6-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
@@ -22,7 +22,13 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      Jackson Annotations should not be duplicated when Generate is re-run.
+      <ul>
+      <li>Jackson Annotations should not be duplicated when Generate is re-run.
+      <li>Builder method for Optional fields should take the generic type as argument. 
+      <li>Make code comment optional
+      <li>Make copy method optional
+      </ul>
+      
       """
 }
 

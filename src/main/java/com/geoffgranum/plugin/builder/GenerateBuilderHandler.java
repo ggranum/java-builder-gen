@@ -1,9 +1,13 @@
 package com.geoffgranum.plugin.builder;
 
+import com.geoffgranum.plugin.builder.generate.BuilderClassGenerator;
+import com.geoffgranum.plugin.builder.generate.BuilderFieldGenerator;
+import com.geoffgranum.plugin.builder.info.FieldInfo;
+import com.geoffgranum.plugin.builder.ui.ChooserCreation;
+import com.geoffgranum.plugin.builder.ui.ValueKeys;
 import com.google.common.collect.Lists;
 import com.intellij.codeInsight.generation.OverrideImplementUtil;
 import com.intellij.codeInsight.generation.PsiFieldMember;
-import com.intellij.ide.util.MemberChooser;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.lang.LanguageCodeInsightActionHandler;
 import com.intellij.openapi.application.ApplicationManager;
@@ -11,29 +15,16 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.TypeConversionUtil;
-import com.intellij.ui.NonFocusableCheckBox;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import java.util.Collections;
 import java.util.List;
 
 public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler {
 
-  @NonNls
-  private static final String PROP_NEW_BUILDER_METHOD = "com.geoffgranum.plugin.BuilderGen.jsonAnnotations";
-
-  @NonNls
-  private static final String IMPLEMENT_VALIDATED = "com.geoffgranum.plugin.BuilderGen.implementValidated";
-
-  @NonNls
-  private static final String GENERATE_JSON_ANNOTATIONS = "com.geoffgranum.plugin.BuilderGen.jsonAnnotations";
 
   @Override
   public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
@@ -70,52 +61,9 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
     List<PsiFieldMember> members = getFields(file, editor);
     List<PsiFieldMember> selectedFields = Lists.newArrayList();
     if (!members.isEmpty() && !ApplicationManager.getApplication().isUnitTestMode()) {
-      selectedFields.addAll(getSelectedFieldsFromDialog(project, propertiesComponent, members));
+      selectedFields.addAll(ChooserCreation.getSelectedFieldsFromDialog(project, propertiesComponent, members));
     }
     return selectedFields;
-  }
-
-  private static List<PsiFieldMember> getSelectedFieldsFromDialog(Project project,
-                                                                  final PropertiesComponent propertiesComponent,
-                                                                  List<PsiFieldMember> members) {
-
-    final JCheckBox withImplementValidated = new NonFocusableCheckBox("Implement Validated");
-    withImplementValidated.setMnemonic('v');
-    withImplementValidated.setToolTipText(
-      "Add Hibernate validations stubs to builder fields and implement the Validated class.");
-    withImplementValidated.setSelected(propertiesComponent.isTrueValue(IMPLEMENT_VALIDATED));
-    withImplementValidated.addItemListener(e -> propertiesComponent.setValue(IMPLEMENT_VALIDATED,
-                                                                             Boolean.toString(withImplementValidated.isSelected())));
-
-    final JCheckBox withJackson = new NonFocusableCheckBox("Enable Jackson marshaling for class.");
-    withJackson.setMnemonic('w');
-    withJackson.setToolTipText(
-      "Annotate the class and Builder fields with the Jackson Annotations required for marshaling/unmarshalling the class.");
-    withJackson.setSelected(propertiesComponent.isTrueValue(GENERATE_JSON_ANNOTATIONS));
-    withJackson.addItemListener(e -> propertiesComponent.setValue(GENERATE_JSON_ANNOTATIONS,
-                                                                  Boolean.toString(withJackson.isSelected())));
-
-    PsiFieldMember[] memberArray = members.toArray(new PsiFieldMember[0]);
-
-    MemberChooser<PsiFieldMember> chooser = new MemberChooser<>(memberArray,
-                                                                false,
-                                                                true,
-                                                                project,
-                                                                null,
-                                                                new JCheckBox[]{ withImplementValidated, withJackson });
-
-    chooser.setTitle("Select Fields to Include in Builder");
-    chooser.selectElements(memberArray);
-    chooser.show();
-
-    List<PsiFieldMember> selectedElements;
-
-    if (chooser.getExitCode() != DialogWrapper.OK_EXIT_CODE) {
-      selectedElements = Collections.emptyList();
-    } else {
-      selectedElements = chooser.getSelectedElements();
-    }
-    return selectedElements;
   }
 
   @Override
@@ -279,18 +227,43 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
 
     @Override
     public void run() {
-      boolean implementValidated = propertiesComponent.getBoolean(IMPLEMENT_VALIDATED, false);
-      boolean implementJackson = propertiesComponent.getBoolean(GENERATE_JSON_ANNOTATIONS, false);
+      boolean implementValidated = propertiesComponent.getBoolean(ValueKeys.IMPLEMENT_VALIDATED, false);
+      boolean implementJackson = propertiesComponent.getBoolean(ValueKeys.GENERATE_JSON_ANNOTATIONS, false);
+      boolean addCopyMethod = propertiesComponent.getBoolean(ValueKeys.ADD_COPY_METHOD, false);
+      boolean addExampleCodeComment = propertiesComponent.getBoolean(ValueKeys.ADD_EXAMPLE_CODE_COMMENT, false);
 
       PsiElement element = file.findElementAt(editor.getCaretModel().getOffset());
       PsiClass clazz = PsiTreeUtil.getParentOfType(element, PsiClass.class);
 
-      BuilderClassGenerator builderMaker = new BuilderClassGenerator.Builder().containerClass(clazz)
-                                                                              .fields(fieldMembers)
-                                                                              .implementJackson(implementJackson)
-                                                                              .implementValidated(implementValidated)
-                                                                              .build();
-      builderMaker.makeSelf(psiElementFactory);
+      if (clazz != null) {
+
+        List<BuilderFieldGenerator> bFields = createBuilderFieldGenerators();
+        GenerateBuilderDirective builderDirective = new GenerateBuilderDirective.Builder().containerClass(clazz)
+                                                                                          .fields(bFields)
+                                                                                          .implementJackson(
+                                                                                            implementJackson)
+                                                                                          .implementValidated(
+                                                                                            implementValidated)
+                                                                                          .generateExampleCodeComment(
+                                                                                            addExampleCodeComment)
+                                                                                          .createCopyMethod(
+                                                                                            addCopyMethod)
+                                                                                          .build();
+        if (clazz.getModifierList() != null) {
+          clazz.getModifierList().setModifierProperty(PsiModifier.FINAL, true);
+        }
+        new BuilderClassGenerator(builderDirective).makeSelf(psiElementFactory);
+      }
+    }
+
+    @NotNull
+    private List<BuilderFieldGenerator> createBuilderFieldGenerators() {
+      List<BuilderFieldGenerator> bFields = Lists.newArrayListWithCapacity(fieldMembers.size());
+      InterestingTypes interestingTypes = new InterestingTypes(psiElementFactory);
+      for (PsiFieldMember member : fieldMembers) {
+        bFields.add(new BuilderFieldGenerator(FieldInfo.from(member.getElement(), interestingTypes)));
+      }
+      return bFields;
     }
   }
 }

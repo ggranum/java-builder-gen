@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NonNls;
 /**
  * @author Geoff M. Granum
  */
-class TypeGenerationUtil {
+public class TypeGenerationUtil {
 
   // From PsiJavaParserFacadeImpl#createClassFromText, which only allows you to specify the *body*.
   private static final String DUMMY_FILE_NAME = "_Dummy_." + JavaFileType.INSTANCE.getDefaultExtension();
@@ -19,7 +19,7 @@ class TypeGenerationUtil {
   private static final String JAVA_DOT_LANG = "java.lang.";
 
   @NonNls
-  static final String BUILDER_CLASS_NAME = "Builder";
+  public static final String BUILDER_CLASS_NAME = "Builder";
 
   private static PsiClass createClassFromText(String text, Project project) {
     final FileType type = JavaFileType.INSTANCE;
@@ -31,7 +31,7 @@ class TypeGenerationUtil {
     return classes[0];
   }
 
-  static PsiClass createBuilderClass(PsiClass clazz, boolean implementValidated) {
+  public static PsiClass createBuilderClass(PsiClass clazz, boolean implementValidated) {
     PsiClass builderClass;
     String builderClassBody;
     if(implementValidated) {
@@ -52,7 +52,7 @@ class TypeGenerationUtil {
     return builderClass;
   }
 
-  static PsiElement addAnnotation(PsiClass target, String annotationText, PsiElementFactory psiElementFactory) {
+  public static PsiElement addAnnotation(PsiClass target, String annotationText, PsiElementFactory psiElementFactory) {
 
     PsiAnnotation annotation = psiElementFactory.createAnnotationFromText(annotationText, target);
 
@@ -62,13 +62,12 @@ class TypeGenerationUtil {
     return modifierList.addBefore(annotation, firstChild);
   }
 
-  static PsiField addField(
-                              PsiClass target,
-                              PsiElement after,
-                              String name,
-                              PsiType type,
-                              PsiElementFactory psiElementFactory,
-                              String... annotationsForField) {
+  public static PsiField addField(PsiClass target,
+                                  PsiElement after,
+                                  String name,
+                                  PsiType type,
+                                  PsiElementFactory psiElementFactory,
+                                  String... annotationsForField) {
     PsiField theField = target.findFieldByName(name, false);
     if(theField != null && !areTypesPresentableEqual(theField.getType(), type)) {
       theField.delete();
@@ -99,20 +98,18 @@ class TypeGenerationUtil {
     return theField;
   }
 
-  static PsiElement addMethod(
-                                 PsiClass target,
-                                 PsiElement after,
-                                 String methodText,
-                                 PsiElementFactory psiElementFactory) {
+  public static PsiElement addMethod(PsiClass target,
+                                     PsiElement after,
+                                     String methodText,
+                                     PsiElementFactory psiElementFactory) {
     return addMethod(target, after, methodText, false, psiElementFactory);
   }
 
-  static PsiElement addMethod(
-                                 PsiClass target,
-                                 PsiElement after,
-                                 String methodText,
-                                 boolean replace,
-                                 PsiElementFactory psiElementFactory) {
+  public static PsiElement addMethod(PsiClass target,
+                                     PsiElement after,
+                                     String methodText,
+                                     boolean replace,
+                                     PsiElementFactory psiElementFactory) {
     PsiMethod newMethod = psiElementFactory.createMethodFromText(methodText, null);
     PsiMethod theMethod = target.findMethodBySignature(newMethod, false);
 
