@@ -4,6 +4,7 @@ import com.geoffgranum.plugin.builder.GenerateBuilderDirective;
 import com.geoffgranum.plugin.builder.TypeGenerationUtil;
 import com.geoffgranum.plugin.builder.info.FieldInfo;
 import com.google.common.collect.Lists;
+import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
@@ -38,7 +39,8 @@ public class BuilderFieldGenerator {
   }
 
   void makeSelf(GenerateBuilderDirective directive,
-                PsiClass targetClass, BuilderFieldGenerator afterField,
+                PsiClass targetClass,
+                BuilderFieldGenerator afterField,
                 PsiElementFactory psiElementFactory) {
     makeField(directive, targetClass, afterField, psiElementFactory);
     makeMethod(targetClass, afterField, psiElementFactory);
@@ -56,28 +58,37 @@ public class BuilderFieldGenerator {
       type = unboxedType;
     }
     String methodText = String.format(BUILDER_METHOD_DEFINITION_FORMAT,
-                                      targetClass.getName(),
-                                      methodName,
-                                      type.getCanonicalText(), info.field.getName());
+      targetClass.getName(),
+      methodName,
+      type.getCanonicalText(),
+      info.field.getName());
 
     builderClassMethod = TypeGenerationUtil.addMethod(targetClass,
-                                                      afterField != null ? afterField.builderClassMethod : null,
-                                                      methodText,
-                                                      psiElementFactory);
+      afterField != null ? afterField.builderClassMethod : null,
+      methodText,
+      psiElementFactory);
   }
 
   private void makeField(GenerateBuilderDirective directive,
-                         PsiClass targetClass, BuilderFieldGenerator afterField, PsiElementFactory psiElementFactory) {
+                         PsiClass targetClass,
+                         BuilderFieldGenerator afterField,
+                         PsiElementFactory psiElementFactory) {
     PsiType type = info.field.getType();
-    if (type instanceof PsiPrimitiveType) {
+    if (info.isPrimitiveType) {
       type = ((PsiPrimitiveType) type).getBoxedType(info.field);
     }
     List<String> annotations = Lists.newArrayList();
     if (directive.implementValidated) {
-      annotations.addAll(generateValidationAnnotationsText(info.field.getName(), type));
+      annotations.addAll(generateNullConstraints(info.field.getName(), type));
     }
     if (directive.implementJackson) {
       annotations.add(JACKSON_ANNOTATION_FORMAT);
+    }
+    if (directive.copyFieldAnnotations) {
+      for (PsiAnnotation fieldAnnotation : info.field.getAnnotations()) {
+        String ann = fieldAnnotation.getText();
+        annotations.add(ann);
+      }
     }
 
     if (info.isAnOptional) {
@@ -85,22 +96,35 @@ public class BuilderFieldGenerator {
     }
 
     builderClassField = TypeGenerationUtil.addField(targetClass,
-                                                    afterField != null ? afterField.builderClassField : null,
-                                                    info.field.getName(),
-                                                    type,
-                                                    psiElementFactory,
-                                                    annotations.toArray(new String[0]));
+      afterField != null ? afterField.builderClassField : null,
+      info.field.getName(),
+      type,
+      psiElementFactory,
+      annotations.toArray(new String[0]));
 
     if (!info.annotationsInfo.hasNullable) {
       if (info.isList) {
         initializeBuilderListField(psiElementFactory);
       } else if (info.isMap) {
         initializeBuilderMapField(psiElementFactory);
-
       }
     }
+    if (type != null && info.isPrimitiveType) {
+      initializeBuilderPrimitiveField(type, psiElementFactory);
+    }
+  }
 
-
+  /**
+   * We initialize the primitive wrapper because int and Integer are very different things.
+   */
+  private void initializeBuilderPrimitiveField(PsiType type, PsiElementFactory factory) {
+    String init = "0";
+    if(type.getCanonicalText().contains("Boolean")){
+      init = "false";
+    }
+    PsiExpression psiInitializer =
+      factory.createExpressionFromText(init, builderClassField);
+    builderClassField.setInitializer(psiInitializer);
   }
 
   private void initializeBuilderListField(PsiElementFactory factory) {
@@ -117,10 +141,10 @@ public class BuilderFieldGenerator {
 
   /**
    * @future: We should copy these annotations off of the Built class's field definitions, at least until
-   * we can parse the existing builder (if any) during 're-generate'. Because there's no other way to know
-   * what the configurations have been set to.
+   *     we can parse the existing builder (if any) during 're-generate'. Because there's no other way to know
+   *     what the configurations have been set to.
    */
-  private List<String> generateValidationAnnotationsText(String fieldName, PsiType type) {
+  private List<String> generateNullConstraints(String fieldName, PsiType type) {
     List<String> bFieldAnnotations = new ArrayList<>();
 
     String fieldClassName;
@@ -134,20 +158,6 @@ public class BuilderFieldGenerator {
       bFieldAnnotations.add("@javax.validation.constraints.Nullable");
     } else {
       bFieldAnnotations.add("@javax.validation.constraints.NotNull");
-      if ("String".equals(fieldClassName)) {
-        if (fieldName.toLowerCase().contains("email")) {
-          bFieldAnnotations.add("@org.hibernate.validator.constraints.Email");
-        }
-        bFieldAnnotations.add("@org.hibernate.validator.constraints.Length(min = 1, max = 100)");
-      } else if ("Integer".equals(fieldClassName) || "Long".equals(fieldClassName)) {
-        bFieldAnnotations.add("@org.hibernate.validator.constraints.Range(min = 0, max = "
-                              + fieldClassName
-                              + ".MAX_VALUE)");
-      } else if ("Double".equals(fieldClassName) || "Float".equals(fieldClassName)) {
-        bFieldAnnotations.add("@org.hibernate.validator.constraints.Range(min = 0, max = Long.MAX_VALUE)");
-      } else if ("List".equals(fieldClassName) || "Set".equals(fieldClassName)) {
-        bFieldAnnotations.add("@javax.validation.constraints.Size(min = 0, max = 100)");
-      }
     }
     return bFieldAnnotations;
   }

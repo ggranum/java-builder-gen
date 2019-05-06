@@ -1,7 +1,5 @@
 package com.geoffgranum.plugin.builder.info;
 
-import com.intellij.psi.PsiAnnotation;
-
 /**
  * @author ggranum
  */
@@ -11,29 +9,11 @@ public final class FieldAnnotationsInfo {
 
   public final boolean hasNullable;
 
+
+
   private FieldAnnotationsInfo(Builder builder) {
     hasNotNull = builder.hasNotNull;
     hasNullable = builder.hasNullable;
-  }
-
-
-  public static FieldAnnotationsInfo from(PsiAnnotation[] annotations) {
-    Builder builder = new Builder().hasNotNull(checkForAnnotationByName(annotations, "NotNull"))
-                                   .hasNullable(checkForAnnotationByName(annotations, "Nullable"));
-    return builder.build();
-  }
-
-  private static boolean checkForAnnotationByName(PsiAnnotation[] annotations, String name) {
-    boolean result = false;
-    for (PsiAnnotation annotation : annotations) {
-      String qName = annotation.getQualifiedName();
-      if (qName != null && qName.contains(name)) {
-        result = true;
-        break;
-      }
-    }
-    return result;
-
   }
 
   public static final class Builder {

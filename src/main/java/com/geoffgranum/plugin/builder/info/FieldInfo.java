@@ -2,6 +2,7 @@ package com.geoffgranum.plugin.builder.info;
 
 import com.geoffgranum.plugin.builder.InterestingTypes;
 import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 
@@ -26,6 +27,8 @@ public final class FieldInfo {
 
   public final boolean isMap;
 
+  public final boolean isPrimitiveType;
+
   /**
    * Literally "java.util.Optional"
    */
@@ -42,6 +45,8 @@ public final class FieldInfo {
     isMap = builder.isMap;
     isAnOptional = builder.isAnOptional;
     field = builder.field;
+
+    isPrimitiveType = field.getType() instanceof PsiPrimitiveType;
   }
 
 
@@ -61,7 +66,7 @@ public final class FieldInfo {
     }
     return builder.field(field)
                   .actualType(type)
-                  .annotationsInfo(FieldAnnotationsInfo.from(field.getAnnotations()))
+                  .annotationsInfo(new FieldAnnotationsInfoParser().parse(field.getAnnotations()))
                   .build();
   }
 
@@ -74,11 +79,11 @@ public final class FieldInfo {
 
     private String typeClassName;
 
-    private Boolean isCollection;
+    private boolean isCollection;
 
-    private Boolean isMap;
+    private boolean isMap;
 
-    private Boolean isAnOptional;
+    private boolean isAnOptional;
 
     private PsiField field;
 

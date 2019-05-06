@@ -18,6 +18,10 @@ public final class GenerateBuilderDirective {
 
   public final boolean implementJackson;
 
+  public final boolean implementToAndFromJson;
+
+  public final boolean copyFieldAnnotations;
+
   public final boolean implementValidated;
 
   public final boolean generateExampleCodeComment;
@@ -26,19 +30,25 @@ public final class GenerateBuilderDirective {
 
   public final boolean usePrefixWith;
 
+
+
   private GenerateBuilderDirective(Builder builder) {
     containerClass = builder.containerClass;
     fields = builder.fields;
     preferImmutability = builder.preferImmutability;
     implementJackson = builder.implementJackson;
+    implementToAndFromJson = builder.implementToJsonFromJson;
     implementValidated = builder.implementValidated;
     generateExampleCodeComment = builder.generateExampleCodeComment;
     createCopyMethod = builder.createCopyMethod;
     usePrefixWith = builder.usePrefixWith;
+    copyFieldAnnotations = builder.copyFieldAnnotations;
   }
 
 
   public static final class Builder {
+    private boolean implementToJsonFromJson;
+
     private PsiClass containerClass;
 
     private List<BuilderFieldGenerator> fields;
@@ -54,6 +64,8 @@ public final class GenerateBuilderDirective {
     private boolean createCopyMethod;
 
     private boolean usePrefixWith;
+
+    private boolean copyFieldAnnotations;
 
     public Builder() {
     }
@@ -80,6 +92,22 @@ public final class GenerateBuilderDirective {
 
     public Builder implementJackson(boolean implementJackson) {
       this.implementJackson = implementJackson;
+      if(!implementJackson && implementToJsonFromJson){
+        implementToJsonFromJson = false;
+      }
+      return this;
+    }
+
+    public Builder implementToJsonFromJson(boolean implementFromJson){
+      this.implementToJsonFromJson = implementFromJson;
+      if(implementFromJson && !implementJackson){
+        implementJackson = true;
+      }
+      return this;
+    }
+
+    public Builder copyFieldAnnotations(boolean copyFieldAnnotations) {
+      this.copyFieldAnnotations = copyFieldAnnotations;
       return this;
     }
 

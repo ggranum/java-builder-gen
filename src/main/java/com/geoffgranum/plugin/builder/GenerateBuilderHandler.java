@@ -3,7 +3,7 @@ package com.geoffgranum.plugin.builder;
 import com.geoffgranum.plugin.builder.generate.BuilderClassGenerator;
 import com.geoffgranum.plugin.builder.generate.BuilderFieldGenerator;
 import com.geoffgranum.plugin.builder.info.FieldInfo;
-import com.geoffgranum.plugin.builder.ui.ChooserCreation;
+import com.geoffgranum.plugin.builder.ui.Dialog;
 import com.geoffgranum.plugin.builder.ui.ValueKeys;
 import com.google.common.collect.Lists;
 import com.intellij.codeInsight.generation.OverrideImplementUtil;
@@ -43,11 +43,7 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
     }
 
     ApplicationManager.getApplication()
-                      .runWriteAction(new MakeBuilderRunnable(project,
-                                                              file,
-                                                              editor,
-                                                              fieldMembers,
-                                                              propertiesComponent));
+      .runWriteAction(new MakeBuilderRunnable(project, file, editor, fieldMembers, propertiesComponent));
   }
 
   /**
@@ -60,25 +56,12 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
                                                    final PropertiesComponent propertiesComponent) {
     List<PsiFieldMember> members = getFields(file, editor);
     List<PsiFieldMember> selectedFields = Lists.newArrayList();
+    Dialog d = new Dialog(propertiesComponent);
+
     if (!members.isEmpty() && !ApplicationManager.getApplication().isUnitTestMode()) {
-      selectedFields.addAll(ChooserCreation.getSelectedFieldsFromDialog(project, propertiesComponent, members));
+      selectedFields.addAll(d.getSelectedFieldsFromDialog(project, members));
     }
     return selectedFields;
-  }
-
-  @Override
-  public boolean isValidFor(Editor editor, PsiFile file) {
-    return file instanceof PsiJavaFile
-           && OverrideImplementUtil.getContextClass(editor.getProject(), editor, file, false) != null
-           && isApplicable(file, editor);
-  }
-
-  /**
-   * Check the current Intellij scope for any fields, regardless of access level, scope, etc.
-   */
-  private static boolean isApplicable(PsiFile file, Editor editor) {
-    List<PsiFieldMember> targetElements = getFields(file, editor);
-    return !targetElements.isEmpty();
   }
 
   /**
@@ -112,14 +95,12 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
     for (PsiField field : clazz.getFields()) {
       // check access to the field from the builder container class (eg. private superclass fields)
       if (fieldIsAccessibleFromBuilder(element, accessObjectClass, clazz, field) && !ignoringField(accessObjectClass,
-                                                                                                   clazz,
-                                                                                                   field)) {
+        clazz,
+        field)) {
         PsiClass containingClass = field.getContainingClass();
         if (containingClass != null) {
           classFieldMembers.add(new PsiFieldMember(field,
-                                                   TypeConversionUtil.getSuperClassSubstitutor(containingClass,
-                                                                                               clazz,
-                                                                                               PsiSubstitutor.EMPTY)));
+            TypeConversionUtil.getSuperClassSubstitutor(containingClass, clazz, PsiSubstitutor.EMPTY)));
         }
       }
     }
@@ -194,6 +175,21 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
   }
 
   @Override
+  public boolean isValidFor(Editor editor, PsiFile file) {
+    return file instanceof PsiJavaFile
+           && OverrideImplementUtil.getContextClass(editor.getProject(), editor, file, false) != null
+           && isApplicable(file, editor);
+  }
+
+  /**
+   * Check the current Intellij scope for any fields, regardless of access level, scope, etc.
+   */
+  private static boolean isApplicable(PsiFile file, Editor editor) {
+    List<PsiFieldMember> targetElements = getFields(file, editor);
+    return !targetElements.isEmpty();
+  }
+
+  @Override
   public boolean startInWriteAction() {
     return false;
   }
@@ -227,10 +223,14 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
 
     @Override
     public void run() {
-      boolean implementValidated = propertiesComponent.getBoolean(ValueKeys.IMPLEMENT_VALIDATED, false);
       boolean implementJackson = propertiesComponent.getBoolean(ValueKeys.GENERATE_JSON_ANNOTATIONS, false);
+      boolean implementToJsonFromJson = propertiesComponent.getBoolean(ValueKeys.GENERATE_TO_FROM_JSON_METHOD, false);
+      boolean implementValidated = propertiesComponent.getBoolean(ValueKeys.IMPLEMENT_VALIDATED, false);
       boolean addCopyMethod = propertiesComponent.getBoolean(ValueKeys.ADD_COPY_METHOD, false);
       boolean addExampleCodeComment = propertiesComponent.getBoolean(ValueKeys.ADD_EXAMPLE_CODE_COMMENT, false);
+      boolean useWithPrefix = propertiesComponent.getBoolean(ValueKeys.USE_WITH_PREFIX, false);
+      boolean copyFieldAnnotations = propertiesComponent.getBoolean(ValueKeys.COPY_FIELD_ANNOTATIONS, false);
+      String[] annotationsTocopy = propertiesComponent.getValues(ValueKeys.ANNOTATIONS_TO_COPY);
 
       PsiElement element = file.findElementAt(editor.getCaretModel().getOffset());
       PsiClass clazz = PsiTreeUtil.getParentOfType(element, PsiClass.class);
@@ -239,21 +239,59 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
 
         List<BuilderFieldGenerator> bFields = createBuilderFieldGenerators();
         GenerateBuilderDirective builderDirective = new GenerateBuilderDirective.Builder().containerClass(clazz)
-                                                                                          .fields(bFields)
-                                                                                          .implementJackson(
-                                                                                            implementJackson)
-                                                                                          .implementValidated(
-                                                                                            implementValidated)
-                                                                                          .generateExampleCodeComment(
-                                                                                            addExampleCodeComment)
-                                                                                          .createCopyMethod(
-                                                                                            addCopyMethod)
-                                                                                          .build();
+          .fields(bFields)
+          .implementJackson(implementJackson)
+          .implementToJsonFromJson(implementToJsonFromJson)
+          .implementValidated(implementValidated)
+          .copyFieldAnnotations(copyFieldAnnotations)
+          .generateExampleCodeComment(addExampleCodeComment)
+          .createCopyMethod(addCopyMethod)
+          .usePrefixWith(useWithPrefix)
+          .build();
         if (clazz.getModifierList() != null) {
           clazz.getModifierList().setModifierProperty(PsiModifier.FINAL, true);
         }
+
+        if (builderDirective.implementToAndFromJson) {
+          this.makeFromJsonMethod(clazz, psiElementFactory);
+          this.makeToJsonMethod(clazz, psiElementFactory);
+        }
+
         new BuilderClassGenerator(builderDirective).makeSelf(psiElementFactory);
       }
+    }
+
+    private void makeFromJsonMethod(PsiClass targetClass, PsiElementFactory psiElementFactory) {
+
+      String fmt = "public static %1$s fromJson(com.fasterxml.jackson.databind.ObjectMapper mapper, String json) {\n"
+                   + "    try {\n"
+                   + "      return mapper.readValue(json, %1$s.class);\n"
+                   + "    } catch (java.io.IOException e){\n"
+                   + "      // This will be verbose, but without it we won't know the cause of the fatal exception.\n"
+                   + "      throw new com.geoffgranum.spork.common.exception.FormattedException(e, \"Could not create instance from provided JSON.\\n\\n %%s \\n\\n\", json);\n"
+                   + "    }\n"
+                   + "  }\n";
+
+
+      String methodText = String.format(fmt, targetClass.getName());
+
+      TypeGenerationUtil.addMethod(targetClass, null, methodText, true, psiElementFactory);
+    }
+
+    private void makeToJsonMethod(PsiClass targetClass, PsiElementFactory psiElementFactory) {
+
+      String fmt = "public java.lang.String toJson(com.fasterxml.jackson.databind.ObjectMapper mapper) {\n"
+                   + "    try {\n"
+                   + "      return mapper.writeValueAsString(this);\n"
+                   + "    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {\n"
+                   + "      throw new com.geoffgranum.spork.common.exception.FormattedException(e, \"Could not write %1$s as Json\");\n"
+                   + "    }\n"
+                   + "  }\n";
+
+
+      String methodText = String.format(fmt, targetClass.getName());
+
+      TypeGenerationUtil.addMethod(targetClass, null, methodText, true, psiElementFactory);
     }
 
     @NotNull

@@ -8,7 +8,7 @@
     <description><![CDATA[
       <h1>Builder Generator for immutable POJO models.</h1>
 
-      <p>What's the point of a builder pattern if your isn't immutable? If your model is immutable, what's
+      <p>What's the point of a builder pattern if it isn't immutable? If your model is immutable, what's
       the point of getter access?</p>
       <p>Create a builder from your final fields. Add your @Immutable annotation of choice and make the class final.
       Done.

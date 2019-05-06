@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.geoffgranum.plugin'
-version '1.0.6-SNAPSHOT'
+version '1.0.11.SNAPSHOT'
 
 sourceCompatibility = 1.8
 
@@ -20,15 +20,18 @@ dependencies {
 intellij {
     version '2019.1'
 }
+
 patchPluginXml {
     changeNotes """
       <ul>
-      <li>Jackson Annotations should not be duplicated when Generate is re-run.
-      <li>Builder method for Optional fields should take the generic type as argument. 
-      <li>Make code comment optional
-      <li>Make copy method optional
+      <li>Copy annotations from model fields onto builder fields.
       </ul>
       
       """
+}
+
+publishPlugin {
+  username intellijPublishUsername
+  password intellijPublishPassword
 }
 
