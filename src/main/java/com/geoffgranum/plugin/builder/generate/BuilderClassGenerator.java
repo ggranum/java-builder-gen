@@ -27,7 +27,7 @@ public class BuilderClassGenerator {
   public void makeSelf(PsiElementFactory psiElementFactory) {
     builderClass = directive.containerClass.findInnerClassByName(TypeGenerationUtil.BUILDER_CLASS_NAME, false);
     if (builderClass != null) {
-      // @todo: ggranum: Scrap info about existing builder class so we can augment it.
+      // @todo: ggranum: Scrape info about existing builder class so we can augment it.
       builderClass.delete();
     }
     builderClass = TypeGenerationUtil.createBuilderClass(directive.containerClass, directive.implementValidated);

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.geoffgranum.plugin'
-version '1.0.11.SNAPSHOT'
+version '1.0.14'
 
 sourceCompatibility = 1.8
 
@@ -25,6 +25,9 @@ patchPluginXml {
     changeNotes """
       <ul>
       <li>Copy annotations from model fields onto builder fields.
+      <li>Wrap lists, maps, sets in an immutable copy. 
+      <li>Initialize primitive main-class fields in the builder class, to prevent NPEs on unwrap. 
+      <li>Optionals should be initialized using Optional.ofNullable / Optional.of in ctor.  
       </ul>
       
       """

@@ -3,7 +3,6 @@ package com.geoffgranum.plugin.builder.generate;
 import com.geoffgranum.plugin.builder.GenerateBuilderDirective;
 import com.geoffgranum.plugin.builder.TypeGenerationUtil;
 import com.geoffgranum.plugin.builder.info.FieldInfo;
-import com.google.common.collect.Lists;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -12,10 +11,9 @@ import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
-import com.intellij.psi.impl.source.PsiClassReferenceType;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Geoff M. Granum
@@ -73,34 +71,35 @@ public class BuilderFieldGenerator {
                          PsiClass targetClass,
                          BuilderFieldGenerator afterField,
                          PsiElementFactory psiElementFactory) {
-    PsiType type = info.field.getType();
+    PsiType dataType = info.field.getType();
     if (info.isPrimitiveType) {
-      type = ((PsiPrimitiveType) type).getBoxedType(info.field);
+      dataType = ((PsiPrimitiveType) dataType).getBoxedType(info.field);
     }
-    List<String> annotations = Lists.newArrayList();
-    if (directive.implementValidated) {
-      annotations.addAll(generateNullConstraints(info.field.getName(), type));
-    }
+    Set<String> fieldAnnotations = new HashSet<>();
     if (directive.implementJackson) {
-      annotations.add(JACKSON_ANNOTATION_FORMAT);
-    }
-    if (directive.copyFieldAnnotations) {
-      for (PsiAnnotation fieldAnnotation : info.field.getAnnotations()) {
-        String ann = fieldAnnotation.getText();
-        annotations.add(ann);
-      }
+      fieldAnnotations.add(JACKSON_ANNOTATION_FORMAT);
     }
 
     if (info.isAnOptional) {
-      type = info.typeParameters[0];
+      dataType = info.typeParameters[0];
     }
 
     builderClassField = TypeGenerationUtil.addField(targetClass,
       afterField != null ? afterField.builderClassField : null,
-      info.field.getName(),
-      type,
-      psiElementFactory,
-      annotations.toArray(new String[0]));
+      info.field.getName(), dataType,
+      psiElementFactory, fieldAnnotations.toArray(new String[0]));
+
+    if (!directive.copyFieldAnnotations) {
+      for (PsiAnnotation fieldAnnotation : info.field.getAnnotations()) {
+        String ann = fieldAnnotation.getQualifiedName();
+        if (ann != null) {
+          PsiAnnotation annotation = builderClassField.getAnnotation(fieldAnnotation.getQualifiedName());
+          if (annotation != null) {
+            annotation.delete();
+          }
+        }
+      }
+    }
 
     if (!info.annotationsInfo.hasNullable) {
       if (info.isList) {
@@ -109,8 +108,8 @@ public class BuilderFieldGenerator {
         initializeBuilderMapField(psiElementFactory);
       }
     }
-    if (type != null && info.isPrimitiveType) {
-      initializeBuilderPrimitiveField(type, psiElementFactory);
+    if (dataType != null && info.isPrimitiveType) {
+      initializeBuilderPrimitiveField(dataType, psiElementFactory);
     }
   }
 
@@ -119,11 +118,10 @@ public class BuilderFieldGenerator {
    */
   private void initializeBuilderPrimitiveField(PsiType type, PsiElementFactory factory) {
     String init = "0";
-    if(type.getCanonicalText().contains("Boolean")){
+    if (type.getCanonicalText().contains("Boolean")) {
       init = "false";
     }
-    PsiExpression psiInitializer =
-      factory.createExpressionFromText(init, builderClassField);
+    PsiExpression psiInitializer = factory.createExpressionFromText(init, builderClassField);
     builderClassField.setInitializer(psiInitializer);
   }
 
@@ -139,37 +137,27 @@ public class BuilderFieldGenerator {
     builderClassField.setInitializer(psiInitializer);
   }
 
-  /**
-   * @future: We should copy these annotations off of the Built class's field definitions, at least until
-   *     we can parse the existing builder (if any) during 're-generate'. Because there's no other way to know
-   *     what the configurations have been set to.
-   */
-  private List<String> generateNullConstraints(String fieldName, PsiType type) {
-    List<String> bFieldAnnotations = new ArrayList<>();
-
-    String fieldClassName;
-    if (type instanceof PsiClassReferenceType) {
-      fieldClassName = ((PsiClassReferenceType) type).getClassName();
-    } else {
-      fieldClassName = type.getPresentableText();
-    }
-
-    if (info.isAnOptional) {
-      bFieldAnnotations.add("@javax.validation.constraints.Nullable");
-    } else {
-      bFieldAnnotations.add("@javax.validation.constraints.NotNull");
-    }
-    return bFieldAnnotations;
+  String toConstructorDeclaration() {
+    String value = getRealClassFieldValueFromBuilder();
+    return String.format("%1$s = %2$s;", info.field.getName(), value);
   }
 
-  String toConstructorDeclaration() {
-    String declaration;
-    if (info.isAnOptional) {
-      declaration = String.format("%1$s = Optional.ofNullable( builder.%1$s );\n", info.field.getName());
-    } else {
-      declaration = String.format("%1$s = builder.%1$s;\n", info.field.getName());
+  /**
+   * Collections need to be wrapped in immutables, this figures out which one.
+   * Also handles optionals by wrapping in an ofNullable.
+   */
+  private String getRealClassFieldValueFromBuilder() {
+    String result = "builder." + info.field.getName();
+    if (info.isCollection) {
+      String immutableClassName = info.getImmutableCollectionName();
+      result =
+        String.format("com.google.common.collect.%s.copyOf(builder.%s)", immutableClassName, info.field.getName());
     }
-    return declaration;
+    if (info.isAnOptional) {
+      result = "java.util.Optional.ofNullable(" + result + ")";
+    }
+    return result;
+
   }
 
   String copyCtorInitializationString() {

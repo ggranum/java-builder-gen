@@ -23,9 +23,13 @@ public final class FieldInfo {
 
   public final String typeClassName;
 
+  public final boolean isCollection;
+
   public final boolean isList;
 
   public final boolean isMap;
+
+  public final boolean isSet;
 
   public final boolean isPrimitiveType;
 
@@ -41,12 +45,32 @@ public final class FieldInfo {
     typeParameters = builder.typeParameters;
     actualType = builder.actualType;
     typeClassName = builder.typeClassName;
-    isList = builder.isCollection;
+    isCollection = builder.isCollection;
+    isList = builder.isList;
+    isSet = builder.isSet;
     isMap = builder.isMap;
     isAnOptional = builder.isAnOptional;
     field = builder.field;
 
     isPrimitiveType = field.getType() instanceof PsiPrimitiveType;
+  }
+
+  public String getImmutableCollectionName() {
+    String name;
+    if (this.isCollection) {
+      if (this.isList) {
+        name = "List";
+      } else if (this.isMap) {
+        name = "Map";
+      } else if (this.isSet) {
+        name = "Set";
+      } else {
+        throw new RuntimeException("Unhandled collection type: " + this.field.getType().getCanonicalText());
+      }
+    } else {
+      throw new IllegalStateException("Developer fail.");
+    }
+    return "Immutable" + name;
   }
 
 
@@ -56,21 +80,24 @@ public final class FieldInfo {
     if (type instanceof PsiClassReferenceType) {
       PsiClassReferenceType pType = (PsiClassReferenceType) type;
       builder.typeParameters(pType.getParameters())
-             .typeClassName(pType.getClassName())
-             .isAnOptional(interestingTypes.isAnOptional(pType))
-             .isMap(interestingTypes.isJavaUtilMap(pType))
-             .isCollection(interestingTypes.isJavaUtilList(pType));
+        .typeClassName(pType.getClassName())
+        .isAnOptional(interestingTypes.isAnOptional(pType))
+        .isCollection(interestingTypes.isJavaUtilCollection(pType))
+        .isMap(interestingTypes.isJavaUtilMap(pType))
+        .isSet(interestingTypes.isJavaUtilSet(pType))
+        .isList(interestingTypes.isJavaUtilList(pType));
     } else {
 
       builder.typeClassName(type.getPresentableText());
     }
     return builder.field(field)
-                  .actualType(type)
-                  .annotationsInfo(new FieldAnnotationsInfoParser().parse(field.getAnnotations()))
-                  .build();
+      .actualType(type)
+      .annotationsInfo(new FieldAnnotationsInfoParser().parse(field.getAnnotations()))
+      .build();
   }
 
   public static final class Builder {
+
     private FieldAnnotationsInfo annotationsInfo;
 
     private PsiType[] typeParameters;
@@ -80,6 +107,10 @@ public final class FieldInfo {
     private String typeClassName;
 
     private boolean isCollection;
+
+    private boolean isSet;
+
+    private boolean isList;
 
     private boolean isMap;
 
@@ -127,8 +158,17 @@ public final class FieldInfo {
       return this;
     }
 
+    public void isList(boolean isList) {
+      this.isList = isList;
+    }
+
     public Builder isMap(boolean isMap) {
       this.isMap = isMap;
+      return this;
+    }
+
+    public Builder isSet(boolean isSet) {
+      this.isSet = isSet;
       return this;
     }
 
