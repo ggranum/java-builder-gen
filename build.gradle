@@ -1,10 +1,20 @@
+
+buildscript {
+  repositories {
+    maven {
+      url "https://dl.bintray.com/jetbrains/intellij-plugin-service"
+    }
+  }
+}
+
+
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.4.7'
+    id 'org.jetbrains.intellij' version '0.4.13'
 }
 
 group 'com.geoffgranum.plugin'
-version '1.0.14'
+version '1.0.16'
 
 sourceCompatibility = 1.8
 
@@ -18,23 +28,45 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2019.1'
+    version '2019.3'
+    plugins = ['java']
 }
+
+
+/**
+ * Apply local properties file, if present.
+ */
+if (file('gradle.local.properties').exists()) {
+  print "Applying gradle.local.properties file."
+
+  def props = new Properties()
+  file('gradle.local.properties').withInputStream {
+    props.load(it)
+    props.each { key, value ->
+      if(key.startsWith('systemProp')){
+        System.properties.put(key.substring('systemProp.'.length()), value);
+      } else {
+        rootProject[key] = value
+      }
+    }
+  }
+} else {
+  print "Consider creating a gradle.local.properties file to override the settings stored in the VCS controlled " +
+    "'gradle.properties', If you happen to need to."
+}
+
 
 patchPluginXml {
     changeNotes """
       <ul>
-      <li>Copy annotations from model fields onto builder fields.
-      <li>Wrap lists, maps, sets in an immutable copy. 
-      <li>Initialize primitive main-class fields in the builder class, to prevent NPEs on unwrap. 
-      <li>Optionals should be initialized using Optional.ofNullable / Optional.of in ctor.  
+      <li>Build against IntelliJ 2019.3
+      <li>Long values should be initialized to 0L.  
       </ul>
       
       """
 }
 
 publishPlugin {
-  username intellijPublishUsername
-  password intellijPublishPassword
+  token intellijPublishToken
 }
 

@@ -120,7 +120,10 @@ public class BuilderFieldGenerator {
     String init = "0";
     if (type.getCanonicalText().contains("Boolean")) {
       init = "false";
+    } else if( type.getCanonicalText().contains("Long") ){
+      init = "0L";
     }
+
     PsiExpression psiInitializer = factory.createExpressionFromText(init, builderClassField);
     builderClassField.setInitializer(psiInitializer);
   }
