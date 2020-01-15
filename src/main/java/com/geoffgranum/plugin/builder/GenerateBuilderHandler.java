@@ -1,5 +1,6 @@
 package com.geoffgranum.plugin.builder;
 
+import com.geoffgranum.plugin.builder.domain.PreferencesState;
 import com.geoffgranum.plugin.builder.generate.BuilderClassGenerator;
 import com.geoffgranum.plugin.builder.generate.BuilderFieldGenerator;
 import com.geoffgranum.plugin.builder.info.FieldInfo;
@@ -56,7 +57,9 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
                                                    final PropertiesComponent propertiesComponent) {
     List<PsiFieldMember> members = getFields(file, editor);
     List<PsiFieldMember> selectedFields = Lists.newArrayList();
-    Dialog d = new Dialog(propertiesComponent);
+    String stateJson = propertiesComponent.getValue(ValueKeys.USER_PREFERENCES_KEY, "{}");
+    PreferencesState state = PreferencesState.fromJson(stateJson).build();
+    Dialog d = new Dialog(state, propertiesComponent);
 
     if (!members.isEmpty() && !ApplicationManager.getApplication().isUnitTestMode()) {
       selectedFields.addAll(d.getSelectedFieldsFromDialog(project, members));
@@ -223,14 +226,9 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
 
     @Override
     public void run() {
-      boolean implementJackson = propertiesComponent.getBoolean(ValueKeys.GENERATE_JSON_ANNOTATIONS, false);
-      boolean implementToJsonFromJson = propertiesComponent.getBoolean(ValueKeys.GENERATE_TO_FROM_JSON_METHOD, false);
-      boolean implementValidated = propertiesComponent.getBoolean(ValueKeys.IMPLEMENT_VALIDATED, false);
-      boolean addCopyMethod = propertiesComponent.getBoolean(ValueKeys.ADD_COPY_METHOD, false);
-      boolean addExampleCodeComment = propertiesComponent.getBoolean(ValueKeys.ADD_EXAMPLE_CODE_COMMENT, false);
-      boolean useWithPrefix = propertiesComponent.getBoolean(ValueKeys.USE_WITH_PREFIX, false);
-      boolean copyFieldAnnotations = propertiesComponent.getBoolean(ValueKeys.COPY_FIELD_ANNOTATIONS, false);
-      String[] annotationsTocopy = propertiesComponent.getValues(ValueKeys.ANNOTATIONS_TO_COPY);
+      // Pull values out of state to run - the dialog box sets state on 'ok' click.
+      String stateJson = propertiesComponent.getValue(ValueKeys.USER_PREFERENCES_KEY);
+      PreferencesState state = PreferencesState.fromJson(stateJson).build();
 
       PsiElement element = file.findElementAt(editor.getCaretModel().getOffset());
       PsiClass clazz = PsiTreeUtil.getParentOfType(element, PsiClass.class);
@@ -240,21 +238,25 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
         List<BuilderFieldGenerator> bFields = createBuilderFieldGenerators();
         GenerateBuilderDirective builderDirective = new GenerateBuilderDirective.Builder().containerClass(clazz)
           .fields(bFields)
-          .implementJackson(implementJackson)
-          .implementToJsonFromJson(implementToJsonFromJson)
-          .implementValidated(implementValidated)
-          .copyFieldAnnotations(copyFieldAnnotations)
-          .generateExampleCodeComment(addExampleCodeComment)
-          .createCopyMethod(addCopyMethod)
-          .usePrefixWith(useWithPrefix)
+          .generateJsonAnnotation(state.generateJsonAnnotations)
+          .generateToJsonMethod(state.generateToJsonMethod)
+          .generateFromJsonMethod(state.generateFromJsonMethod)
+          .implementValidated(state.implementValidated)
+          .copyFieldAnnotations(state.copyFieldAnnotations)
+          .generateExampleCodeComment(state.generateExampleCodeComment)
+          .generateCopyMethod(state.generateCopyMethod)
+          .usePrefixWith(state.useWithPrefix)
           .build();
         if (clazz.getModifierList() != null) {
           clazz.getModifierList().setModifierProperty(PsiModifier.FINAL, true);
         }
 
-        if (builderDirective.implementToAndFromJson) {
-          this.makeFromJsonMethod(clazz, psiElementFactory);
+        if (builderDirective.generateToJsonMethod) {
           this.makeToJsonMethod(clazz, psiElementFactory);
+        }
+
+        if (builderDirective.generateFromJsonMethod) {
+          this.makeFromJsonMethod(clazz, psiElementFactory);
         }
 
         new BuilderClassGenerator(builderDirective).makeSelf(psiElementFactory);
@@ -267,7 +269,6 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
                    + "    try {\n"
                    + "      return mapper.readValue(json, %1$s.class);\n"
                    + "    } catch (java.io.IOException e){\n"
-                   + "      // This will be verbose, but without it we won't know the cause of the fatal exception.\n"
                    + "      throw new com.geoffgranum.spork.common.exception.FormattedException(e, \"Could not create instance from provided JSON.\\n\\n %%s \\n\\n\", json);\n"
                    + "    }\n"
                    + "  }\n";

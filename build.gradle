@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'com.geoffgranum.plugin'
-version '1.0.16'
+version '1.0.17'
 
 sourceCompatibility = 1.8
 
@@ -59,8 +59,7 @@ if (file('gradle.local.properties').exists()) {
 patchPluginXml {
     changeNotes """
       <ul>
-      <li>Build against IntelliJ 2019.3
-      <li>Long values should be initialized to 0L.  
+      <li>Feature: Should be able to create either To or From json methods separately
       </ul>
       
       """
