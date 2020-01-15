@@ -18,7 +18,9 @@ public final class GenerateBuilderDirective {
 
   public final boolean implementJackson;
 
-  public final boolean implementToAndFromJson;
+  public final boolean generateToJsonMethod;
+
+  public final boolean generateFromJsonMethod;
 
   public final boolean copyFieldAnnotations;
 
@@ -36,8 +38,9 @@ public final class GenerateBuilderDirective {
     containerClass = builder.containerClass;
     fields = builder.fields;
     preferImmutability = builder.preferImmutability;
-    implementJackson = builder.implementJackson;
-    implementToAndFromJson = builder.implementToJsonFromJson;
+    implementJackson = builder.generateJsonAnnotations;
+    generateToJsonMethod = builder.generateToJsonMethod;
+    generateFromJsonMethod = builder.generateFromJsonMethod;
     implementValidated = builder.implementValidated;
     generateExampleCodeComment = builder.generateExampleCodeComment;
     createCopyMethod = builder.createCopyMethod;
@@ -47,7 +50,9 @@ public final class GenerateBuilderDirective {
 
 
   public static final class Builder {
-    private boolean implementToJsonFromJson;
+    private boolean generateToJsonMethod;
+
+    private boolean generateFromJsonMethod;
 
     private PsiClass containerClass;
 
@@ -55,7 +60,7 @@ public final class GenerateBuilderDirective {
 
     private boolean preferImmutability;
 
-    private boolean implementJackson;
+    private boolean generateJsonAnnotations;
 
     private boolean implementValidated;
 
@@ -75,7 +80,7 @@ public final class GenerateBuilderDirective {
       return this;
     }
 
-    public Builder createCopyMethod(boolean createCopyMethod) {
+    public Builder generateCopyMethod(boolean createCopyMethod) {
       this.createCopyMethod = createCopyMethod;
       return this;
     }
@@ -90,19 +95,18 @@ public final class GenerateBuilderDirective {
       return this;
     }
 
-    public Builder implementJackson(boolean implementJackson) {
-      this.implementJackson = implementJackson;
-      if(!implementJackson && implementToJsonFromJson){
-        implementToJsonFromJson = false;
-      }
+    public Builder generateJsonAnnotation(boolean generateJsonAnnotations) {
+      this.generateJsonAnnotations = generateJsonAnnotations;
       return this;
     }
 
-    public Builder implementToJsonFromJson(boolean implementFromJson){
-      this.implementToJsonFromJson = implementFromJson;
-      if(implementFromJson && !implementJackson){
-        implementJackson = true;
-      }
+    public Builder generateToJsonMethod(boolean generateToJsonMethod){
+      this.generateToJsonMethod = generateToJsonMethod;
+      return this;
+    }
+
+    public Builder generateFromJsonMethod(boolean implementFromJson){
+      this.generateFromJsonMethod = implementFromJson;
       return this;
     }
 
@@ -127,6 +131,8 @@ public final class GenerateBuilderDirective {
     }
 
     public GenerateBuilderDirective build() {
+      // tempting to throw an error generateTo/From JSON methods is enabled, but JSON Annotations are not. But
+      // the code will be created and could work, and maybe the user wants it that way?
       return new GenerateBuilderDirective(this);
     }
   }

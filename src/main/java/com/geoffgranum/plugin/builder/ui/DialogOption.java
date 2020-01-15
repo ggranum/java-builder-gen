@@ -11,13 +11,10 @@ public class DialogOption {
 
   public final char mnemonic;
 
-  public final String key;
-
-  public DialogOption(String title, String description, char mnemonic, String key) {
+  public DialogOption(String title, String description, char mnemonic) {
     this.title = title;
     this.description = description;
     this.mnemonic = mnemonic;
-    this.key = key;
   }
 }
 
