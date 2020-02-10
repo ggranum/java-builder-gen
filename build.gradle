@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'com.geoffgranum.plugin'
-version '1.0.17'
+version '2.0.1'
 
 sourceCompatibility = 1.8
 
@@ -59,7 +59,7 @@ if (file('gradle.local.properties').exists()) {
 patchPluginXml {
     changeNotes """
       <ul>
-      <li>Feature: Should be able to create either To or From json methods separately
+      <li>Feature: Migrate to Uttu from Spork. Please do not update until you are ready replace Spork with Uttu (or you don't use the validation or fromJson features)  
       </ul>
       
       """

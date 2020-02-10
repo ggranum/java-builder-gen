@@ -35,7 +35,7 @@ public class TypeGenerationUtil {
     PsiClass builderClass;
     String builderClassBody;
     if(implementValidated) {
-      builderClassBody = "public static class %s extends com.geoffgranum.spork.common.validation.Validated {}";
+      builderClassBody = "public static class %s extends com.geoffgranum.uttu.core.validation.Validated {}";
     } else {
       builderClassBody = "public static class %s {}";
     }

@@ -269,7 +269,7 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
                    + "    try {\n"
                    + "      return mapper.readValue(json, %1$s.class);\n"
                    + "    } catch (java.io.IOException e){\n"
-                   + "      throw new com.geoffgranum.spork.common.exception.FormattedException(e, \"Could not create instance from provided JSON.\\n\\n %%s \\n\\n\", json);\n"
+                   + "      throw new com.geoffgranum.uttu.core.exception.FormattedException(e, \"Could not create instance from provided JSON.\\n\\n %%s \\n\\n\", json);\n"
                    + "    }\n"
                    + "  }\n";
 
@@ -285,7 +285,7 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
                    + "    try {\n"
                    + "      return mapper.writeValueAsString(this);\n"
                    + "    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {\n"
-                   + "      throw new com.geoffgranum.spork.common.exception.FormattedException(e, \"Could not write %1$s as Json\");\n"
+                   + "      throw new com.geoffgranum.uttu.core.exception.FormattedException(e, \"Could not write %1$s as Json\");\n"
                    + "    }\n"
                    + "  }\n";
 

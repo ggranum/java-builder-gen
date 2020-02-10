@@ -37,7 +37,7 @@ public class Dialog {
     'a');
 
   public static final DialogOption IMPLEMENT_VALIDATED = new DialogOption("Implement Validated",
-    "Add Hibernate validations stubs to builder fields and implement the Validated class. Requires JavaSpork, see Plugin readme.",
+    "Add Hibernate validations stubs to builder fields and implement the Validated class. Requires Uttu, see Plugin readme.",
     'v');
 
   public static final DialogOption GENERATE_COPY_METHOD = new DialogOption("Generate Copy Method",
