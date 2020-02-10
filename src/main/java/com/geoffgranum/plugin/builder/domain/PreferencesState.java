@@ -23,6 +23,8 @@ public final class PreferencesState {
 
   public final boolean useWithPrefix;
 
+  public final boolean useSpork;
+
   private PreferencesState(Builder builder) {
     copyFieldAnnotations = builder.copyFieldAnnotations;
     generateJsonAnnotations = builder.generateJsonAnnotations;
@@ -32,6 +34,7 @@ public final class PreferencesState {
     generateCopyMethod = builder.generateCopyMethod;
     generateExampleCodeComment = builder.generateExampleCodeComment;
     useWithPrefix = builder.useWithPrefix;
+    useSpork = builder.useSpork;
   }
 
   public String toJson() {
@@ -60,6 +63,8 @@ public final class PreferencesState {
 
     private Boolean useWithPrefix = false;
 
+    private Boolean useSpork = true;
+
     public Builder() {
     }
 
@@ -77,6 +82,7 @@ public final class PreferencesState {
       generateCopyMethod = copy.generateCopyMethod;
       generateExampleCodeComment = copy.generateExampleCodeComment;
       useWithPrefix = copy.useWithPrefix;
+      useSpork = copy.useSpork;
       return this;
     }
 
@@ -112,6 +118,11 @@ public final class PreferencesState {
 
     public Builder useWithPrefix(boolean useWithPrefix) {
       this.useWithPrefix = useWithPrefix;
+      return this;
+    }
+
+    public Builder useSpork(boolean useSpork) {
+      this.useSpork = useSpork;
       return this;
     }
 

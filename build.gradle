@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'com.geoffgranum.plugin'
-version '2.0.1'
+version '2.0.2'
 
 sourceCompatibility = 1.8
 
@@ -59,7 +59,7 @@ if (file('gradle.local.properties').exists()) {
 patchPluginXml {
     changeNotes """
       <ul>
-      <li>Feature: Migrate to Uttu from Spork. Please do not update until you are ready replace Spork with Uttu (or you don't use the validation or fromJson features)  
+      <li>Feature: Migrate to Uttu from Spork. An option is provided for remaining on the deprecated Spork project.  
       </ul>
       
       """

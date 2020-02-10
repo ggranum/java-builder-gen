@@ -51,6 +51,10 @@ public class Dialog {
     "Prefix every single builder method with the completely redundant and annoyingly verbose 'with' syntax.",
     'w');
 
+  public static final DialogOption USE_SPORK = new DialogOption("[Deprecated] Use Spork Library (instead of Uttu).",
+    "For to/From json and Validated, use the older Spork imports instead of the newer Uttu project.",
+    'x');
+
   private final PropertiesComponent propertiesComponent;
 
   private final PreferencesState.Builder newState;
@@ -70,6 +74,8 @@ public class Dialog {
   private JCheckBox generateCopyMethodCb;
 
   private JCheckBox useWithPrefixCb;
+
+  private JCheckBox useSporkCb;
 
   private JCheckBox generateExampleCodeCommentCb;
 
@@ -109,6 +115,9 @@ public class Dialog {
 
     useWithPrefixCb = createUseWithPrefixCb();
     components.add(useWithPrefixCb);
+
+    useSporkCb = createUseSporkCb();
+    components.add(useSporkCb);
 
     chooser = new MemberChooser<>(memberArray, false, true, project, null, components.toArray(new JComponent[0]));
 
@@ -212,6 +221,13 @@ public class Dialog {
   private JCheckBox createUseWithPrefixCb() {
     JCheckBox cb = createCheckbox(USE_WITH_PREFIX, previousState.useWithPrefix);
     cb.addItemListener((e -> newState.useWithPrefix(cb.isSelected())));
+    return cb;
+  }
+
+  @NotNull
+  private JCheckBox createUseSporkCb() {
+    JCheckBox cb = createCheckbox(USE_SPORK, previousState.useSpork);
+    cb.addItemListener((e -> newState.useSpork(cb.isSelected())));
     return cb;
   }
 }

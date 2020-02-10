@@ -31,11 +31,11 @@ public class TypeGenerationUtil {
     return classes[0];
   }
 
-  public static PsiClass createBuilderClass(PsiClass clazz, boolean implementValidated) {
+  public static PsiClass createBuilderClass(PsiClass clazz, GenerateBuilderDirective directive) {
     PsiClass builderClass;
     String builderClassBody;
-    if(implementValidated) {
-      builderClassBody = "public static class %s extends com.geoffgranum.uttu.core.validation.Validated {}";
+    if(directive.implementValidated) {
+      builderClassBody = "public static class %s extends "+ directive.utilBaseClassPath() +  ".validation.Validated {}";
     } else {
       builderClassBody = "public static class %s {}";
     }

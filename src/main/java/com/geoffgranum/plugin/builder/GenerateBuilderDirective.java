@@ -32,6 +32,8 @@ public final class GenerateBuilderDirective {
 
   public final boolean usePrefixWith;
 
+  public final boolean useSpork;
+
 
 
   private GenerateBuilderDirective(Builder builder) {
@@ -45,8 +47,23 @@ public final class GenerateBuilderDirective {
     generateExampleCodeComment = builder.generateExampleCodeComment;
     createCopyMethod = builder.createCopyMethod;
     usePrefixWith = builder.usePrefixWith;
+    useSpork = builder.useSpork;
     copyFieldAnnotations = builder.copyFieldAnnotations;
   }
+
+
+  public String utilBaseClassPath() {
+    return useSpork ? "com.geoffgranum.spork.common" : "com.geoffgranum.uttu.core";
+  }
+
+  public String fromJsonExceptionClass() {
+    return utilBaseClassPath() + ".exception.FormattedException";
+  }
+
+  public String toJsonExceptionClass() {
+    return utilBaseClassPath() + ".exception.FormattedException";
+  }
+
 
 
   public static final class Builder {
@@ -69,6 +86,8 @@ public final class GenerateBuilderDirective {
     private boolean createCopyMethod;
 
     private boolean usePrefixWith;
+
+    private boolean useSpork;
 
     private boolean copyFieldAnnotations;
 
@@ -127,6 +146,11 @@ public final class GenerateBuilderDirective {
 
     public Builder usePrefixWith(boolean usePrefixWith) {
       this.usePrefixWith = usePrefixWith;
+      return this;
+    }
+
+    public Builder useSpork(boolean useSpork) {
+      this.useSpork = useSpork;
       return this;
     }
 
