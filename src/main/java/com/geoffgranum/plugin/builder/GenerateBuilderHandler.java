@@ -236,7 +236,7 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
       if (clazz != null) {
 
         List<BuilderFieldGenerator> bFields = createBuilderFieldGenerators();
-        GenerateBuilderDirective builderDirective = new GenerateBuilderDirective.Builder().containerClass(clazz)
+        GenerateBuilderDirective directive = new GenerateBuilderDirective.Builder().containerClass(clazz)
           .fields(bFields)
           .generateJsonAnnotation(state.generateJsonAnnotations)
           .generateToJsonMethod(state.generateToJsonMethod)
@@ -246,30 +246,31 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
           .generateExampleCodeComment(state.generateExampleCodeComment)
           .generateCopyMethod(state.generateCopyMethod)
           .usePrefixWith(state.useWithPrefix)
+          .useSpork(state.useSpork)
           .build();
         if (clazz.getModifierList() != null) {
           clazz.getModifierList().setModifierProperty(PsiModifier.FINAL, true);
         }
 
-        if (builderDirective.generateToJsonMethod) {
-          this.makeToJsonMethod(clazz, psiElementFactory);
+        if (directive.generateToJsonMethod) {
+          this.makeToJsonMethod(clazz, psiElementFactory, directive);
         }
 
-        if (builderDirective.generateFromJsonMethod) {
-          this.makeFromJsonMethod(clazz, psiElementFactory);
+        if (directive.generateFromJsonMethod) {
+          this.makeFromJsonMethod(clazz, psiElementFactory, directive);
         }
 
-        new BuilderClassGenerator(builderDirective).makeSelf(psiElementFactory);
+        new BuilderClassGenerator(directive).makeSelf(psiElementFactory);
       }
     }
 
-    private void makeFromJsonMethod(PsiClass targetClass, PsiElementFactory psiElementFactory) {
+    private void makeFromJsonMethod(PsiClass targetClass, PsiElementFactory psiElementFactory, GenerateBuilderDirective state) {
 
       String fmt = "public static %1$s fromJson(com.fasterxml.jackson.databind.ObjectMapper mapper, String json) {\n"
                    + "    try {\n"
                    + "      return mapper.readValue(json, %1$s.class);\n"
                    + "    } catch (java.io.IOException e){\n"
-                   + "      throw new com.geoffgranum.spork.common.exception.FormattedException(e, \"Could not create instance from provided JSON.\\n\\n %%s \\n\\n\", json);\n"
+                   + "      throw new " + state.fromJsonExceptionClass() + "(e, \"Could not create instance from provided JSON.\\n\\n %%s \\n\\n\", json);\n"
                    + "    }\n"
                    + "  }\n";
 
@@ -279,13 +280,13 @@ public class GenerateBuilderHandler implements LanguageCodeInsightActionHandler 
       TypeGenerationUtil.addMethod(targetClass, null, methodText, true, psiElementFactory);
     }
 
-    private void makeToJsonMethod(PsiClass targetClass, PsiElementFactory psiElementFactory) {
+    private void makeToJsonMethod(PsiClass targetClass, PsiElementFactory psiElementFactory, GenerateBuilderDirective state) {
 
       String fmt = "public java.lang.String toJson(com.fasterxml.jackson.databind.ObjectMapper mapper) {\n"
                    + "    try {\n"
                    + "      return mapper.writeValueAsString(this);\n"
                    + "    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {\n"
-                   + "      throw new com.geoffgranum.spork.common.exception.FormattedException(e, \"Could not write %1$s as Json\");\n"
+                   + "      throw new "+ state.toJsonExceptionClass() + "(e, \"Could not write %1$s as Json\");\n"
                    + "    }\n"
                    + "  }\n";
 

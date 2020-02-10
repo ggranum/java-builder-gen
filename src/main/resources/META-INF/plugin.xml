@@ -20,7 +20,7 @@
       <ul>
       <li> Generates Copy constructor and example usage code comment on builder constructor.
       <li> Optionally applies Jackson Annotations to your builders. Parse from JSON straight into an immutable POJO.
-      <li> Optionally applies Hibernate Validations, with the use of JavaSpork project ( https://github.com/ggranum/java-spork )
+      <li> Optionally applies Hibernate Validations, with the use of the Uttu project ( https://github.com/ggranum/uttu )
       <li> <em> Overwrites on each invocation!</em>. Be careful. Replacing this with 'update' is high priority, but also
       quite complex.
       </ul>
@@ -43,7 +43,6 @@
                 description="Generate Builder for this class.">
             <add-to-group group-id="GenerateGroup" anchor="last"/>
         </action>
-
     </actions>
 
 </idea-plugin>

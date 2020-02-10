@@ -37,7 +37,7 @@ public class Dialog {
     'a');
 
   public static final DialogOption IMPLEMENT_VALIDATED = new DialogOption("Implement Validated",
-    "Add Hibernate validations stubs to builder fields and implement the Validated class. Requires JavaSpork, see Plugin readme.",
+    "Add Hibernate validations stubs to builder fields and implement the Validated class. Requires Uttu, see Plugin readme.",
     'v');
 
   public static final DialogOption GENERATE_COPY_METHOD = new DialogOption("Generate Copy Method",
@@ -50,6 +50,10 @@ public class Dialog {
   public static final DialogOption USE_WITH_PREFIX = new DialogOption("Use annoying 'with' prefix on builder methods.",
     "Prefix every single builder method with the completely redundant and annoyingly verbose 'with' syntax.",
     'w');
+
+  public static final DialogOption USE_SPORK = new DialogOption("[Deprecated] Use Spork Library (instead of Uttu).",
+    "For to/From json and Validated, use the older Spork imports instead of the newer Uttu project.",
+    'x');
 
   private final PropertiesComponent propertiesComponent;
 
@@ -70,6 +74,8 @@ public class Dialog {
   private JCheckBox generateCopyMethodCb;
 
   private JCheckBox useWithPrefixCb;
+
+  private JCheckBox useSporkCb;
 
   private JCheckBox generateExampleCodeCommentCb;
 
@@ -109,6 +115,9 @@ public class Dialog {
 
     useWithPrefixCb = createUseWithPrefixCb();
     components.add(useWithPrefixCb);
+
+    useSporkCb = createUseSporkCb();
+    components.add(useSporkCb);
 
     chooser = new MemberChooser<>(memberArray, false, true, project, null, components.toArray(new JComponent[0]));
 
@@ -212,6 +221,13 @@ public class Dialog {
   private JCheckBox createUseWithPrefixCb() {
     JCheckBox cb = createCheckbox(USE_WITH_PREFIX, previousState.useWithPrefix);
     cb.addItemListener((e -> newState.useWithPrefix(cb.isSelected())));
+    return cb;
+  }
+
+  @NotNull
+  private JCheckBox createUseSporkCb() {
+    JCheckBox cb = createCheckbox(USE_SPORK, previousState.useSpork);
+    cb.addItemListener((e -> newState.useSpork(cb.isSelected())));
     return cb;
   }
 }

@@ -20,7 +20,7 @@ Be careful. Replacing this with 'update' is high priority, but also quite comple
 - Add Jackson Annotations to your builders. Parse from JSON straight into an immutable POJO.
 - Auto generate toJson and fromJson methods that use Jackson to marshal your object. 
 - Generates Copy constructor and example usage code comment on builder constructor.
-- Optionally applies Hibernate Validations, with the use of JavaSpork project ( https://github.com/ggranum/java-spork )
+- Optionally applies Hibernate Validations, with the use of the Uttu  project ( https://github.com/ggranum/uttu )
 
 Adds a 'Generate Builder' option to the actions menu for a class.
 

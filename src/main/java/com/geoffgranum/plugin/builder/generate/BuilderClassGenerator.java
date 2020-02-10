@@ -30,7 +30,7 @@ public class BuilderClassGenerator {
       // @todo: ggranum: Scrape info about existing builder class so we can augment it.
       builderClass.delete();
     }
-    builderClass = TypeGenerationUtil.createBuilderClass(directive.containerClass, directive.implementValidated);
+    builderClass = TypeGenerationUtil.createBuilderClass(directive.containerClass, directive);
     builderClass = (PsiClass) directive.containerClass.add(builderClass);
 
     makeContainerClassCtorTakingBuilder(psiElementFactory);
