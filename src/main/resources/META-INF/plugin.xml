@@ -1,7 +1,8 @@
 <idea-plugin>
+    <idea-version since-build="191.*" until-build="211.*"/>
     <id>com.geoffgranum.plugin.BuilderGen</id>
     <name>BuilderGen</name>
-    <version>0.2</version>
+    <version>2.1.0</version>
     <vendor email="buildergen@geoffgranum.com">Geoff M. Granum</vendor>
     <depends>com.intellij.modules.java</depends>
 
@@ -38,9 +39,16 @@
     </change-notes>
 
     <actions>
-        <action id="com.geoffgranum.plugin.BuilderGen" class="com.geoffgranum.plugin.builder.GenerateBuilderAction"
+        <action id="com.geoffgranum.plugin.BuilderGen"
+                class="com.geoffgranum.plugin.builder.action.GenerateBuilderAction"
                 text="Generate Builder..."
                 description="Generate Builder for this class.">
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
+        </action>
+        <action id="com.geoffgranum.plugin.BuilderGenCopy"
+                class="com.geoffgranum.plugin.builder.action.AddCopyMethodAction"
+                text="Builder Copy Method..."
+                description="Add a copy method to this builder.">
             <add-to-group group-id="GenerateGroup" anchor="last"/>
         </action>
     </actions>

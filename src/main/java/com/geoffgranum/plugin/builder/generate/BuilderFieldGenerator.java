@@ -1,7 +1,7 @@
 package com.geoffgranum.plugin.builder.generate;
 
-import com.geoffgranum.plugin.builder.GenerateBuilderDirective;
 import com.geoffgranum.plugin.builder.TypeGenerationUtil;
+import com.geoffgranum.plugin.builder.domain.GenerateBuilderDirective;
 import com.geoffgranum.plugin.builder.info.FieldInfo;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -31,7 +31,6 @@ public class BuilderFieldGenerator {
 
   private PsiElement builderClassMethod;
 
-
   public BuilderFieldGenerator(FieldInfo info) {
     this.info = info;
   }
@@ -44,8 +43,13 @@ public class BuilderFieldGenerator {
     makeMethod(targetClass, afterField, psiElementFactory);
   }
 
+  /**
+   * Create the 'setter' for this field.
+   * Of the form:
+   * public Builder foo(SomeType foo){ this.foo = foo; return this; }
+   */
   private void makeMethod(PsiClass targetClass, BuilderFieldGenerator afterField, PsiElementFactory psiElementFactory) {
-    // public Builder something(SomeType someValue){ this.value = someValue; return this; }
+    //
     String methodName = info.field.getName();
     PsiType type = info.actualType;
     if (info.isAnOptional) {
@@ -55,16 +59,13 @@ public class BuilderFieldGenerator {
     if (unboxedType != null) {
       type = unboxedType;
     }
-    String methodText = String.format(BUILDER_METHOD_DEFINITION_FORMAT,
-      targetClass.getName(),
-      methodName,
-      type.getCanonicalText(),
-      info.field.getName());
+    String methodText =
+      String.format(BUILDER_METHOD_DEFINITION_FORMAT, targetClass.getName(), methodName, type.getCanonicalText(), info.field.getName());
 
-    builderClassMethod = TypeGenerationUtil.addMethod(targetClass,
+    builderClassMethod = TypeGenerationUtil.addMethod(psiElementFactory,
+      targetClass,
       afterField != null ? afterField.builderClassMethod : null,
-      methodText,
-      psiElementFactory);
+      methodText);
   }
 
   private void makeField(GenerateBuilderDirective directive,
@@ -163,9 +164,6 @@ public class BuilderFieldGenerator {
 
   }
 
-  String copyCtorInitializationString() {
-    String fmt = "%1$s = copy.%1$s;\n";
-    return String.format(fmt, info.field.getName());
-  }
+
 }
  

@@ -1,6 +1,6 @@
 package com.geoffgranum.plugin.builder.info;
 
-import com.geoffgranum.plugin.builder.InterestingTypes;
+import com.geoffgranum.plugin.builder.domain.CustomDataTypes;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
@@ -74,7 +74,7 @@ public final class FieldInfo {
   }
 
 
-  public static FieldInfo from(PsiField field, InterestingTypes interestingTypes) {
+  public static FieldInfo from(PsiField field, CustomDataTypes interestingTypes) {
     Builder builder = new Builder();
     PsiType type = field.getType();
     if (type instanceof PsiClassReferenceType) {
