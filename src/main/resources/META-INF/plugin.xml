@@ -1,5 +1,5 @@
 <idea-plugin>
-    <idea-version since-build="191.*" until-build="211.*"/>
+    <idea-version since-build="191.*" until-build="212.*"/>
     <id>com.geoffgranum.plugin.BuilderGen</id>
     <name>BuilderGen</name>
     <version>2.1.3</version>
