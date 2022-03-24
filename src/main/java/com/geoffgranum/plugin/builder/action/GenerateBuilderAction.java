@@ -1,4 +1,4 @@
-package com.geoffgranum.plugin.builder;
+package com.geoffgranum.plugin.builder.action;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.BaseCodeInsightAction;

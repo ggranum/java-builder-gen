@@ -1,5 +1,6 @@
 package com.geoffgranum.plugin.builder;
 
+import com.geoffgranum.plugin.builder.domain.GenerateBuilderDirective;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
@@ -98,37 +99,58 @@ public class TypeGenerationUtil {
     return theField;
   }
 
-  public static PsiElement addMethod(PsiClass target,
+  public static PsiElement addMethod(PsiElementFactory psiElementFactory,
+                                     PsiClass target,
                                      PsiElement after,
-                                     String methodText,
-                                     PsiElementFactory psiElementFactory) {
-    return addMethod(target, after, methodText, false, psiElementFactory);
+                                     String methodText) {
+    return addMethod(psiElementFactory, target, after, methodText, false);
   }
 
-  public static PsiElement addMethod(PsiClass target,
-                                     PsiElement after,
+  public static PsiElement addMethod(PsiElementFactory psiElementFactory,
+                                     PsiClass target,
                                      String methodText,
-                                     boolean replace,
-                                     PsiElementFactory psiElementFactory) {
+                                     boolean replace) {
+    return addMethod(psiElementFactory, target, null, methodText, replace);
+  }
+
+  public static PsiElement addMethod(PsiElementFactory psiElementFactory,
+                                     PsiClass target,
+                                     PsiElement reference,
+                                     String methodText,
+                                     boolean replace) {
+    return addMethod(psiElementFactory, target, reference, methodText, replace, false);
+
+  }
+
+  public static PsiElement addMethod(PsiElementFactory psiElementFactory,
+                                     PsiClass target,
+                                     PsiElement anchor,
+                                     String methodText,
+                                     boolean replaceIfExists,
+                                     boolean insertBeforeAnchor) {
     PsiMethod newMethod = psiElementFactory.createMethodFromText(methodText, null);
     PsiMethod theMethod = target.findMethodBySignature(newMethod, false);
 
-    if(theMethod == null && newMethod.isConstructor()) {
+    if (theMethod == null && newMethod.isConstructor()) {
       for (PsiMethod constructor : target.getConstructors()) {
-        if(areParameterListsEqual(constructor.getParameterList(), newMethod.getParameterList())) {
+        if (areParameterListsEqual(constructor.getParameterList(), newMethod.getParameterList())) {
           theMethod = constructor;
           break;
         }
       }
     }
 
-    if(theMethod == null) {
-      if(after != null) {
-        target.addAfter(newMethod, after);
+    if (theMethod == null) {
+      if (anchor != null) {
+        if (insertBeforeAnchor) {
+          target.addBefore(newMethod, anchor);
+        } else {
+          target.addAfter(newMethod, anchor);
+        }
       } else {
         target.add(newMethod);
       }
-    } else if(replace) {
+    } else if (replaceIfExists) {
       theMethod.replace(newMethod);
     }
     theMethod = target.findMethodBySignature(newMethod, false);

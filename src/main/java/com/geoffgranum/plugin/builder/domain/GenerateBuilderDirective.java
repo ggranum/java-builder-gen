@@ -1,4 +1,4 @@
-package com.geoffgranum.plugin.builder;
+package com.geoffgranum.plugin.builder.domain;
 
 import com.geoffgranum.plugin.builder.generate.BuilderFieldGenerator;
 import com.intellij.psi.PsiClass;

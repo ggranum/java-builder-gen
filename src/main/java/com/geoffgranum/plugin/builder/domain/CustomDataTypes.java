@@ -1,4 +1,4 @@
-package com.geoffgranum.plugin.builder;
+package com.geoffgranum.plugin.builder.domain;
 
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiType;
@@ -7,7 +7,7 @@ import com.intellij.psi.impl.source.PsiClassReferenceType;
 /**
  * @author ggranum
  */
-public class InterestingTypes {
+public class CustomDataTypes {
 
   public final PsiType javaUtilList;
 
@@ -19,7 +19,7 @@ public class InterestingTypes {
 
   private final PsiType javaUtilCollection;
 
-  public InterestingTypes(PsiElementFactory factory) {
+  public CustomDataTypes(PsiElementFactory factory) {
     this.javaUtilCollection = factory.createTypeFromText("java.util.Collection", null);
     this.javaUtilList = factory.createTypeFromText("java.util.List", null);
     this.javaUtilSet = factory.createTypeFromText("java.util.Set", null);

@@ -1,13 +1,17 @@
 package com.geoffgranum.plugin.builder.generate;
 
-import com.geoffgranum.plugin.builder.GenerateBuilderDirective;
 import com.geoffgranum.plugin.builder.TypeGenerationUtil;
+import com.geoffgranum.plugin.builder.domain.GenerateBuilderDirective;
+import com.geoffgranum.plugin.builder.info.FieldInfo;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Geoff M. Granum
@@ -33,7 +37,7 @@ public class BuilderClassGenerator {
     builderClass = TypeGenerationUtil.createBuilderClass(directive.containerClass, directive);
     builderClass = (PsiClass) directive.containerClass.add(builderClass);
 
-    makeContainerClassCtorTakingBuilder(psiElementFactory);
+    makeInstanceClassCtorTakingBuilder(psiElementFactory);
 
     BuilderFieldGenerator previous = null;
     for (BuilderFieldGenerator field : directive.fields) {
@@ -43,7 +47,13 @@ public class BuilderClassGenerator {
 
     makeBuilderCtor(psiElementFactory);
     if (directive.createCopyMethod) {
-      makeFromCopyMethod(psiElementFactory);
+      List<FieldInfo> infos = new ArrayList<>();
+      for (BuilderFieldGenerator field : directive.fields) {
+        infos.add(field.info);
+      }
+
+      new FromInstanceMethodCreator().create(psiElementFactory, directive.containerClass, builderClass, infos);
+      new CopyMethodCreator().create(psiElementFactory, builderClass, infos);
     }
 
     makeBuildMethod(psiElementFactory);
@@ -59,25 +69,25 @@ public class BuilderClassGenerator {
     codeStyleManager.reformat(directive.containerClass);
   }
 
-  private void makeContainerClassCtorTakingBuilder(PsiElementFactory psiElementFactory) {
-    TypeGenerationUtil.addMethod(directive.containerClass,
-                                 null,
-                                 this.makePrimaryClassConstructorString(),
-                                 true,
-                                 psiElementFactory);
+  private void makeInstanceClassCtorTakingBuilder(PsiElementFactory psiElementFactory) {
+    TypeGenerationUtil.addMethod(psiElementFactory,
+      directive.containerClass,
+      null,
+      this.makeInstanceClassConstructorString(),
+      true);
   }
 
-  private String makePrimaryClassConstructorString() {
+  private String makeInstanceClassConstructorString() {
     return String.format(PRIMARY_CLASS_CTOR_FMT,
-                         directive.containerClass.getName(),
-                         builderClass.getName(),
-                         generateConstructorBody());
+      directive.containerClass.getName(),
+      builderClass.getName(),
+      generateConstructorBody(directive.fields));
   }
 
-  private String generateConstructorBody() {
+  private String generateConstructorBody(List<BuilderFieldGenerator> fields) {
     StringBuilder b = new StringBuilder();
 
-    for (BuilderFieldGenerator field : directive.fields) {
+    for (BuilderFieldGenerator field : fields) {
       b.append(field.toConstructorDeclaration());
     }
     return b.toString();
@@ -99,29 +109,15 @@ public class BuilderClassGenerator {
   }
 
   private void makeBuildMethod(PsiElementFactory psiElementFactory) {
-    TypeGenerationUtil.addMethod(builderClass,
-                                 null,
-                                 String.format("public %1$s build() { \n %2$s return new %1$s(this); \n}",
-                                               directive.containerClass.getQualifiedName(),
-                                               directive.implementValidated ? "checkValid();\n" : ""),
-                                 psiElementFactory);
+    TypeGenerationUtil.addMethod(psiElementFactory,
+      builderClass,
+      null,
+      String.format("public %1$s build() { \n %2$s return new %1$s(this); \n}",
+        directive.containerClass.getQualifiedName(),
+        directive.implementValidated ? "checkValid();\n" : ""));
   }
 
-  private void makeFromCopyMethod(PsiElementFactory psiElementFactory) {
 
-    String fmt = "public %1$s from(%2$s copy){\n" + "  %3$s" + "  return this;" + "}";
-
-    StringBuilder body = new StringBuilder();
-
-    for (BuilderFieldGenerator field : directive.fields) {
-      body.append(field.copyCtorInitializationString());
-    }
-
-    String methodText =
-      String.format(fmt, builderClass.getName(), directive.containerClass.getQualifiedName(), body.toString());
-
-    TypeGenerationUtil.addMethod(builderClass, null, methodText, true, psiElementFactory);
-  }
 
   /**
    * Create the constructor for the Builder class.
@@ -129,10 +125,10 @@ public class BuilderClassGenerator {
   private void makeBuilderCtor(PsiElementFactory psiElementFactory) {
     String comment = directive.generateExampleCodeComment ? generateExampleComment() : "";
     String fmt = "public %1$s(){}";
-    TypeGenerationUtil.addMethod(builderClass,
-                                 null,
-                                 comment + String.format(fmt, builderClass.getName()),
-                                 psiElementFactory);
+    TypeGenerationUtil.addMethod(psiElementFactory,
+      builderClass,
+      null,
+      comment + String.format(fmt, builderClass.getName()));
   }
 
   private String generateExampleComment() {
