@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'com.geoffgranum.plugin'
-version '2.1.4'
+version '2.1.5'
 
 sourceCompatibility = 1.8
 

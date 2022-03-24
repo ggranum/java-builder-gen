@@ -1,8 +1,8 @@
 <idea-plugin>
-    <idea-version since-build="191.*" until-build="212.*"/>
+    <idea-version since-build="191.*" until-build="214.*"/>
     <id>com.geoffgranum.plugin.BuilderGen</id>
     <name>BuilderGen</name>
-    <version>2.1.3</version>
+    <version>2.1.4</version>
     <vendor email="buildergen@geoffgranum.com">Geoff M. Granum</vendor>
     <depends>com.intellij.modules.java</depends>
 
@@ -25,16 +25,11 @@
       <li> <em> Overwrites on each invocation!</em>. Be careful. Replacing this with 'update' is high priority, but also
       quite complex.
       </ul>
-
         <em>forked originally from https://github.com/analytically.<em>
     ]]></description>
 
     <change-notes><![CDATA[
-      Configure for initial release.<br/>
-      Create a simple class with a handful of final fields and no constructor to demonstrate.<br/>
-<br/><br/>
-      <em>WARNING: This plugin does not 'update' the builders it generates when it is re-run. It overwrites them - and any changes you may have made.</em>
-
+      Update compatible versions list.<br/>
     ]]>
     </change-notes>
 
