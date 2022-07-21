@@ -2,7 +2,7 @@
     <idea-version since-build="191.*" until-build="214.*"/>
     <id>com.geoffgranum.plugin.BuilderGen</id>
     <name>BuilderGen</name>
-    <version>2.1.4</version>
+    <version>2.1.6</version>
     <vendor email="buildergen@geoffgranum.com">Geoff M. Granum</vendor>
     <depends>com.intellij.modules.java</depends>
 
